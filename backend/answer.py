@@ -17,6 +17,7 @@ import json
 import os
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 
 DEVANAGARI = re.compile(r"[\u0900-\u097F]")
@@ -148,6 +149,311 @@ def is_groq_configured(explicit_key=None):
     return len(get_all_groq_keys(explicit_key)) > 0
 
 
+DEFAULT_PORTAL_URL = (
+    "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
+)
+
+STANDARDS_DOC_MAP = {
+    # Footwear & Personal Protective Equipment
+    "IS 15298 (Part 2)": {
+        "url": "https://archive.org/details/gov.in.is.15298.2.2011",
+        "title": "BIS Official Standard - IS 15298 Part 2 (Safety Footwear)",
+    },
+    "IS 15298 (Part 3)": {
+        "url": "https://archive.org/details/gov.in.is.15298.3.2011",
+        "title": "BIS Official Standard - IS 15298 Part 3 (Protective Footwear)",
+    },
+    "IS 15298 (Part 4)": {
+        "url": "https://archive.org/details/gov.in.is.15298.4.2010",
+        "title": "BIS Official Standard - IS 15298 Part 4 (Occupational Footwear)",
+    },
+    "IS 15298": {
+        "url": "https://archive.org/details/gov.in.is.15298.2.2011",
+        "title": "BIS Official Standard - IS 15298 (Safety & Protective Footwear)",
+    },
+    "IS 6721": {
+        "url": "https://archive.org/details/gov.in.is.6721.2023",
+        "title": "BIS Official Standard - IS 6721 : 2023 (PVC Footwear & Sandals)",
+    },
+    "IS 10702": {
+        "url": "https://archive.org/details/gov.in.is.10702.2023",
+        "title": "BIS Official Standard - IS 10702 : 2023 (Rubber Hawai Chappals)",
+    },
+    "IS 15844": {
+        "url": "https://archive.org/details/gov.in.is.15844.2010",
+        "title": "BIS Official Standard - IS 15844 (Sports Footwear)",
+    },
+    "IS 11544": {
+        "url": "https://archive.org/details/gov.in.is.11544.1986",
+        "title": "BIS Official Standard - IS 11544 (Leather School Shoes)",
+    },
+    "IS 4151": {
+        "url": "https://archive.org/details/gov.in.is.4151.2015",
+        "title": "BIS Official Standard - IS 4151 : 2015 (Motorcycle Helmets)",
+    },
+    "IS 2925": {
+        "url": "https://archive.org/details/gov.in.is.2925.1984",
+        "title": "BIS Official Standard - IS 2925 (Industrial Safety Helmets)",
+    },
+    "IS 5983": {
+        "url": "https://archive.org/details/gov.in.is.5983.1980",
+        "title": "BIS Official Standard - IS 5983 (Eye-Protectors / Sunglasses)",
+    },
+    "IS 16289": {
+        "url": "https://archive.org/details/gov.in.is.16289.2014",
+        "title": "BIS Official Standard - IS 16289 (Medical Face Masks)",
+    },
+
+    # Construction & Steel & Cement
+    "IS 1786": {
+        "url": "https://archive.org/details/gov.in.is.1786.2008",
+        "title": "BIS Official Standard - IS 1786 : 2008 (TMT Steel Rebars)",
+    },
+    "IS 456": {
+        "url": "https://archive.org/details/gov.in.is.456.2000",
+        "title": "BIS Official Standard - IS 456 : 2000 (Plain & Reinforced Concrete)",
+    },
+    "IS 1489 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.1489.1.1991",
+        "title": "BIS Official Standard - IS 1489 Part 1 (PPC Cement)",
+    },
+    "IS 1489": {
+        "url": "https://archive.org/details/gov.in.is.1489.1.1991",
+        "title": "BIS Official Standard - IS 1489 Part 1 (PPC Cement)",
+    },
+    "IS 12269": {
+        "url": "https://archive.org/details/gov.in.is.12269.2013",
+        "title": "BIS Official Standard - IS 12269 : 2013 (OPC 53 Cement)",
+    },
+    "IS 269": {
+        "url": "https://archive.org/details/gov.in.is.269.2015",
+        "title": "BIS Official Standard - IS 269 (Ordinary Portland Cement)",
+    },
+    "IS 383": {
+        "url": "https://archive.org/details/gov.in.is.383.2016",
+        "title": "BIS Official Standard - IS 383 (Aggregates for Concrete)",
+    },
+    "IS 2062": {
+        "url": "https://archive.org/details/gov.in.is.2062.2011",
+        "title": "BIS Official Standard - IS 2062 (Structural Steel)",
+    },
+    "IS 303": {
+        "url": "https://archive.org/details/gov.in.is.303.1989",
+        "title": "BIS Official Standard - IS 303 (Plywood MR & BWR)",
+    },
+    "IS 814": {
+        "url": "https://archive.org/details/gov.in.is.814.2004",
+        "title": "BIS Official Standard - IS 814 (Covered Welding Electrodes)",
+    },
+
+    # Fire Safety & Domestic Gas
+    "IS 15683": {
+        "url": "https://archive.org/details/gov.in.is.15683.2018",
+        "title": "BIS Official Standard - IS 15683 : 2018 (Portable Fire Extinguishers)",
+    },
+    "IS 3196 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.3196.1.2006",
+        "title": "BIS Official Standard - IS 3196 Part 1 (LPG Cylinders)",
+    },
+    "IS 3196": {
+        "url": "https://archive.org/details/gov.in.is.3196.1.2006",
+        "title": "BIS Official Standard - IS 3196 Part 1 (LPG Cylinders)",
+    },
+    "IS 2347": {
+        "url": "https://archive.org/details/gov.in.is.2347.2006",
+        "title": "BIS Official Standard - IS 2347 (Domestic Pressure Cookers)",
+    },
+    "IS 4246": {
+        "url": "https://archive.org/details/gov.in.is.4246.2002",
+        "title": "BIS Official Standard - IS 4246 (LPG Domestic Gas Stoves)",
+    },
+
+    # Electrical, Electronics & Lighting
+    "IS 302 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.302.1.2008",
+        "title": "BIS Official Standard - IS 302 Part 1 (Electrical Appliances Safety)",
+    },
+    "IS 302 (Part 2/Sec 3)": {
+        "url": "https://archive.org/details/gov.in.is.302.2.3.2007",
+        "title": "BIS Official Standard - IS 302 (Part 2/Sec 3) (Electric Irons)",
+    },
+    "IS 302 (Part 2/Sec 14)": {
+        "url": "https://archive.org/details/gov.in.is.302.2.14.2009",
+        "title": "BIS Official Standard - IS 302 (Part 2/Sec 14) (Mixers & Grinders)",
+    },
+    "IS 302": {
+        "url": "https://archive.org/details/gov.in.is.302.1.2008",
+        "title": "BIS Official Standard - IS 302 (Electrical Appliances Safety)",
+    },
+    "IS 694": {
+        "url": "https://archive.org/details/gov.in.is.694.2010",
+        "title": "BIS Official Standard - IS 694 : 2010 (PVC Electric Cables)",
+    },
+    "IS 1293": {
+        "url": "https://archive.org/details/gov.in.is.1293.2005",
+        "title": "BIS Official Standard - IS 1293 (Plugs and Socket-Outlets)",
+    },
+    "IS 374": {
+        "url": "https://archive.org/details/gov.in.is.374.1979",
+        "title": "BIS Official Standard - IS 374 (Electric Ceiling Fans)",
+    },
+    "IS 2082": {
+        "url": "https://archive.org/details/gov.in.is.2082.1993",
+        "title": "BIS Official Standard - IS 2082 (Electric Water Heaters / Geysers)",
+    },
+    "IS 16102 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.16102.1.2012",
+        "title": "BIS Official Standard - IS 16102 Part 1 (Self-Ballasted LED Lamps)",
+    },
+    "IS 16102": {
+        "url": "https://archive.org/details/gov.in.is.16102.1.2012",
+        "title": "BIS Official Standard - IS 16102 (LED Bulbs)",
+    },
+    "IS 13252 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.13252.1.2010",
+        "title": "BIS Official Standard - IS 13252 Part 1 (IT Equipment Safety)",
+    },
+    "IS 13252": {
+        "url": "https://archive.org/details/gov.in.is.13252.1.2010",
+        "title": "BIS Official Standard - IS 13252 (IT Equipment Safety)",
+    },
+    "IS 16046 (Part 1 & 2)": {
+        "url": "https://archive.org/details/gov.in.is.16046.1.2018",
+        "title": "BIS Official Standard - IS 16046 (Secondary Lithium-ion Batteries)",
+    },
+    "IS 16046": {
+        "url": "https://archive.org/details/gov.in.is.16046.1.2018",
+        "title": "BIS Official Standard - IS 16046 (Lithium-ion Batteries)",
+    },
+    "IS 14286": {
+        "url": "https://archive.org/details/gov.in.is.14286.2010",
+        "title": "BIS Official Standard - IS 14286 (Solar PV Modules)",
+    },
+
+    # Food, Water & Medical
+    "IS 14543": {
+        "url": "https://archive.org/details/gov.in.is.14543.2016",
+        "title": "BIS Official Standard - IS 14543 : 2016 (Packaged Drinking Water)",
+    },
+    "IS 13428": {
+        "url": "https://archive.org/details/gov.in.is.13428.2005",
+        "title": "BIS Official Standard - IS 13428 (Packaged Natural Mineral Water)",
+    },
+    "IS 10500": {
+        "url": "https://archive.org/details/gov.in.is.10500.2012",
+        "title": "BIS Official Standard - IS 10500 : 2012 (Drinking Water)",
+    },
+    "IS 3025": {
+        "url": "https://archive.org/details/gov.in.is.3025.1.1987",
+        "title": "BIS Official Standard - IS 3025 (Water Sampling & Test Methods)",
+    },
+    "IS 10146": {
+        "url": "https://archive.org/details/gov.in.is.10146.1982",
+        "title": "BIS Official Standard - IS 10146 (Polyethylene for Food Contact)",
+    },
+    "IS 1165": {
+        "url": "https://archive.org/details/gov.in.is.1165.2002",
+        "title": "BIS Official Standard - IS 1165 (Milk Powder Specification)",
+    },
+    "IS 3055 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.3055.1.1994",
+        "title": "BIS Official Standard - IS 3055 Part 1 (Clinical Thermometers)",
+    },
+    "IS 3055": {
+        "url": "https://archive.org/details/gov.in.is.3055.1.1994",
+        "title": "BIS Official Standard - IS 3055 (Clinical Thermometers)",
+    },
+
+    # Toys & Automotive
+    "IS 9873 (Part 1)": {
+        "url": "https://archive.org/details/gov.in.is.9873.1.2012",
+        "title": "BIS Official Standard - IS 9873 Part 1 (Safety of Toys)",
+    },
+    "IS 9873": {
+        "url": "https://archive.org/details/gov.in.is.9873.1.2012",
+        "title": "BIS Official Standard - IS 9873 (Safety of Toys)",
+    },
+    "IS 15644": {
+        "url": "https://archive.org/details/gov.in.is.15644.2006",
+        "title": "BIS Official Standard - IS 15644 (Electric Toys Safety)",
+    },
+    "IS 15636": {
+        "url": "https://archive.org/details/gov.in.is.15636.2012",
+        "title": "BIS Official Standard - IS 15636 (Passenger Car Pneumatic Tyres)",
+    },
+
+    # Hallmarking
+    "IS 1417 (Gold Hallmarking)": {
+        "url": "https://archive.org/details/gov.in.is.1417.2016",
+        "title": "BIS Official Standard - IS 1417 : 2016 (Gold Hallmarking & Fineness)",
+    },
+    "IS 1417": {
+        "url": "https://archive.org/details/gov.in.is.1417.2016",
+        "title": "BIS Official Standard - IS 1417 : 2016 (Gold Hallmarking & Fineness)",
+    },
+    "IS 2112": {
+        "url": "https://archive.org/details/gov.in.is.2112.2014",
+        "title": "BIS Official Standard - IS 2112 : 2014 (Silver Hallmarking)",
+    },
+}
+
+
+def resolve_standard_urls(label_or_number):
+    """
+    Returns (doc_url, portal_url, source_title)
+    doc_url: Direct link to official standard document reader/scanned PDF on Archive.org.
+    portal_url: Official BIS Connect Know Your Standards lookup portal.
+    """
+    if not label_or_number:
+        return (
+            DEFAULT_PORTAL_URL,
+            DEFAULT_PORTAL_URL,
+            "BIS Standards Portal",
+        )
+
+    lbl = str(label_or_number).strip()
+
+    # 1. Exact match in catalog
+    if lbl in STANDARDS_DOC_MAP:
+        info = STANDARDS_DOC_MAP[lbl]
+        return (info["url"], DEFAULT_PORTAL_URL, info["title"])
+
+    # 2. Extract standard number and part if present
+    m = re.search(
+        r"IS[\s:\-]?([0-9]{2,5})(?:\s*(?:\(Part\s*(\d+)\)|Part\s*(\d+)))?",
+        lbl,
+        re.IGNORECASE,
+    )
+    if m:
+        num = m.group(1)
+        part = m.group(2) or m.group(3)
+        if part:
+            candidate_part = f"IS {num} (Part {part})"
+            if candidate_part in STANDARDS_DOC_MAP:
+                info = STANDARDS_DOC_MAP[candidate_part]
+                return (info["url"], DEFAULT_PORTAL_URL, info["title"])
+
+        candidate_base = f"IS {num}"
+        if candidate_base in STANDARDS_DOC_MAP:
+            info = STANDARDS_DOC_MAP[candidate_base]
+            return (info["url"], DEFAULT_PORTAL_URL, info["title"])
+
+        # Fallback to authentic public safety standard search on Archive.org
+        search_query = urllib.parse.quote(f'identifier:gov.in.is.{num}* OR title:"IS {num}"')
+        doc_url = f"https://archive.org/search?query={search_query}"
+        return (
+            doc_url,
+            DEFAULT_PORTAL_URL,
+            f"BIS Official Standard - IS {num} Document",
+        )
+
+    return (
+        DEFAULT_PORTAL_URL,
+        DEFAULT_PORTAL_URL,
+        f"BIS Standards Portal - {lbl}",
+    )
+
+
 def build_citations(hits):
     cites = []
     seen = set()
@@ -157,12 +463,22 @@ def build_citations(hits):
         if cid in seen:
             continue
         seen.add(cid)
+
+        is_num = e.get("is_number")
+        doc_url, portal_url, fallback_title = resolve_standard_urls(is_num or e.get("title"))
+
+        source_url = e.get("source_url")
+        if not source_url or "standard_review" in source_url:
+            source_url = doc_url or portal_url
+
         cites.append(
             {
                 "id": e["id"],
-                "label": e.get("is_number") or e["title"],
-                "source_title": e.get("source_title", "BIS"),
-                "source_url": e.get("source_url", "https://www.bis.gov.in/"),
+                "label": is_num or e["title"],
+                "source_title": e.get("source_title") or fallback_title,
+                "source_url": source_url,
+                "doc_url": e.get("doc_url") or doc_url,
+                "portal_url": e.get("portal_url") or portal_url,
                 "verified": e.get("verified", False),
                 "confidence": round(float(h.get("score", 0.0)), 2),
             }
@@ -173,7 +489,7 @@ def build_citations(hits):
 def extract_dynamic_citations(text, existing_citations):
     """
     Extracts Indian Standard numbers mentioned in response (e.g. IS 14543, IS 456, IS 15683)
-    and constructs direct links to the official BIS portal.
+    and constructs direct links to the official standard document and BIS portal.
     """
     existing_labels = {c["label"].upper() for c in existing_citations}
     new_cites = []
@@ -193,16 +509,16 @@ def extract_dynamic_citations(text, existing_citations):
         seen_standards.add(std_label.upper())
 
         std_clean = clean_num.split()[0]
-        portal_url = (
-            "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails"
-        )
+        doc_url, portal_url, source_title = resolve_standard_urls(std_label)
 
         new_cites.append(
             {
                 "id": f"DYN-{std_clean}",
                 "label": std_label,
-                "source_title": "BIS Standards Portal",
-                "source_url": portal_url,
+                "source_title": source_title,
+                "source_url": doc_url,
+                "doc_url": doc_url,
+                "portal_url": portal_url,
                 "verified": True,
                 "confidence": 9.5,
                 "dynamic": True,
@@ -219,6 +535,15 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
     Supports authentic bilingual rendering (Hindi & English) and offline coverage.
     """
     is_hi = (lang == "hi")
+
+    def attach_urls(cd):
+        if not cd:
+            return None
+        lbl = cd.get("is_number") or cd.get("title")
+        doc_u, port_u, _ = resolve_standard_urls(lbl)
+        cd["doc_url"] = doc_u
+        cd["portal_url"] = port_u
+        return cd
 
     # 1. Try parsing explicit [STANDARD_CARD] tag block
     tag_match = re.search(r"\[STANDARD_CARD\](.*?)\[END_STANDARD_CARD\]", text, re.DOTALL)
@@ -237,7 +562,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
         scheme = get_val("SCHEME") or ("योजना-I (ISI मार्क)" if is_hi else "Scheme-I (ISI Mark)")
         status = get_val("STATUS") or ("अनिवार्य QCO के अंतर्गत" if is_hi else "Mandatory under QCO")
 
-        return {
+        return attach_urls({
             "is_number": is_num,
             "title": title,
             "definition": definition,
@@ -245,7 +570,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             "not_given_to": not_given_to,
             "scheme": scheme,
             "status": status,
-        }
+        })
 
     # 2. If hits from local database are present (Offline Database Mode)
     if hits:
@@ -297,7 +622,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             scheme = "Scheme-I (ISI Mark)" if top.get("topic") == "standard" else "BIS Compliance Scheme"
             status = "Mandatory under QCO" if "mandatory" in top.get("summary", "").lower() else "Official Indian Standard"
 
-        return {
+        return attach_urls({
             "is_number": is_num,
             "title": title,
             "definition": definition,
@@ -305,7 +630,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             "not_given_to": not_given_to,
             "scheme": scheme,
             "status": status,
-        }
+        })
 
     # 3. Fallback heuristic from text
     is_matches = re.findall(
@@ -316,7 +641,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
     if is_matches:
         first_std = f"IS {is_matches[0].strip()}"
         first_para = (text.split("\n\n")[0] if "\n\n" in text else text).strip()
-        return {
+        return attach_urls({
             "is_number": first_std,
             "title": (f"भारतीय मानक {first_std}" if is_hi else f"Indian Standard {first_std}"),
             "definition": first_para[:220] + ("..." if len(first_para) > 220 else ""),
@@ -324,12 +649,12 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             "not_given_to": (["अमानक अनधिकृत वस्तुएं", "गैर-अनुपालक उत्पाद"] if is_hi else ["General uncertified articles", "Non-compliant items"]),
             "scheme": ("योजना-I (ISI मार्क)" if is_hi else "Scheme-I (ISI Mark)") if any(k in first_std for k in ["15298", "15683", "4151", "1786", "1489", "12269", "3196"]) else ("बीआईएस योजना" if is_hi else "BIS Scheme"),
             "status": ("आधिकारिक विनिर्देश" if is_hi else "Official Specification"),
-        }
+        })
 
     # 4. If query is about non-mandatory or general item (like general chappals)
     q_lower = question.lower()
     if any(term in q_lower for term in ["chappal", "slipper", "sandal", "casual", "चप्पल"]):
-        return {
+        return attach_urls({
             "is_number": "ऐच्छिक / गैर-अनिवार्य" if is_hi else "Non-Mandatory / Voluntary",
             "title": "सामान्य फुटवियर एवं घरेलू चप्पल" if is_hi else "General Footwear & Casual Slippers",
             "definition": (
@@ -341,7 +666,7 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             "not_given_to": ["औद्योगिक सुरक्षा जूते (इसके लिए IS 15298 Part 2 अनिवार्य है)"] if is_hi else ["Industrial Safety Footwear (requires IS 15298 Part 2)"],
             "scheme": "स्वैच्छिक (सामान्य चप्पल के लिए ISI मार्क अनिवार्य नहीं)" if is_hi else "Voluntary (No Mandatory ISI Mark required for standard chappals)",
             "status": "दैनिक उपयोग के लिए गैर-अनिवार्य" if is_hi else "Non-Compulsory for Casual Wear",
-        }
+        })
 
     return None
 

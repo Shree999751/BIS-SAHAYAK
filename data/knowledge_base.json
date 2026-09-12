@@ -720,9 +720,11 @@
         "विक्रेता से रासायनिक और यांत्रिक गुणों का मिल टेस्ट सर्टिफिकेट (MTC) मांगें",
         "BIS Care ऐप में निर्माता की CM/L लाइसेंस संख्या को सत्यापित करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 1786 (Steel Rebars)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 1786 : 2008 TMT Steel Rebars",
+      "source_url": "https://archive.org/details/gov.in.is.1786.2008",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.1786.2008",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-1489",
@@ -759,9 +761,11 @@
         "बोरी पर फ्लाईऐश प्रतिशत की घोषणा की जांच करें",
         "सीमेंट को नमी से सुरक्षित सूखी जगह पर रखें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 1489 Part 1 (PPC Cement)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 1489 (Part 1) PPC Cement",
+      "source_url": "https://archive.org/details/gov.in.is.1489.1.1991",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.1489.1.1991",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-12269",
@@ -795,9 +799,11 @@
         "सुनिश्चित करें कि सीमेंट का उपयोग निर्माण सप्ताह के 90 दिनों के भीतर किया जाए",
         "IS 10262 के अनुसार कंक्रीट मिक्स डिजाइन तैयार करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 12269 (OPC 53 Cement)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 12269 : 2013 OPC 53 Grade Cement",
+      "source_url": "https://archive.org/details/gov.in.is.12269.2013",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.12269.2013",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-3196",
@@ -833,9 +839,11 @@
         "सिलेंडर की स्टे-प्लेट पर मुद्रित आगामी परीक्षण तिथि (जैसे A-26, B-26) की जांच करें",
         "बिना परीक्षण मोहर या क्षतिग्रस्त वाल्व वाले सिलेंडर को कभी स्वीकार न करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 3196 (LPG Cylinders)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 3196 (Part 1) LPG Cylinders",
+      "source_url": "https://archive.org/details/gov.in.is.3196.1.2006",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.3196.1.2006",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-10146",
@@ -867,9 +875,11 @@
         "सुनिश्चित करें कि प्लास्टिक माइग्रेशन परीक्षण IS 9845 नियमों के अनुरूप हो",
         "गर्म भोजन रखने के लिए गैर-प्रमाणित प्लास्टिक बर्तनों का उपयोग न करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 10146 (Food Contact Plastics)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 10146 Polyethylene for Food Contact",
+      "source_url": "https://archive.org/details/gov.in.is.10146.1982",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.10146.1982",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-14543",
@@ -905,9 +915,11 @@
         "BIS Care ऐप में लाइसेंस नंबर डालकर पुष्टि करें कि बॉटलिंग प्लांट अधिकृत है",
         "बोतल की सील अक्षुण्ण होने तथा निर्माण और समाप्ति तिथि की जांच करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 14543 (Packaged Water)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 14543 : 2016 Packaged Drinking Water",
+      "source_url": "https://archive.org/details/gov.in.is.14543.2016",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.14543.2016",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-9873",
@@ -940,9 +952,11 @@
         "आयु-उपयुक्त चेतावनी लेबल (जैसे '3 वर्ष से कम उम्र के बच्चों के लिए नहीं') की जांच करें",
         "बिना ISI मार्क वाले असुरक्षित खिलौनों की शिकायत BIS Care ऐप पर करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 9873 (Toy Safety)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 9873 (Part 1) Safety of Toys",
+      "source_url": "https://archive.org/details/gov.in.is.9873.1.2012",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.9873.1.2012",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-16102",
@@ -979,9 +993,11 @@
         "बल्ब पर घोषित वाट (Watt), वोल्टेज और ल्यूमेन आउटपुट की जांच करें",
         "बिना BIS प्रमाणन वाले घटिया और स्थानीय LED बल्ब खरीदने से बचें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 16102 (LED Lamps)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 16102 (Part 1) LED Bulbs",
+      "source_url": "https://archive.org/details/gov.in.is.16102.1.2012",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.16102.1.2012",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-2347",
@@ -1012,9 +1028,11 @@
         "सुरक्षा वाल्व और गैस्केट की जांच करें कि वे प्रमाणित ओरिजिनल पार्ट्स हों",
         "बिना ISI मार्क वाले घटिया प्रेशर कुकर कभी न खरीदें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 2347 (Pressure Cookers)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 2347 Pressure Cookers",
+      "source_url": "https://archive.org/details/gov.in.is.2347.2006",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.2347.2006",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-4246",
@@ -1049,9 +1067,11 @@
         "सुनिश्चित करें कि निर्माता द्वारा 68% से अधिक थर्मल दक्षता प्रमाणित हो",
         "गैस चूल्हे को सिलेंडर से जोड़ने के लिए केवल BIS प्रमाणित सुरक्षा होज (IS 9573) का उपयोग करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 4246 (Domestic Gas Stoves)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 4246 LPG Gas Stoves",
+      "source_url": "https://archive.org/details/gov.in.is.4246.2002",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.4246.2002",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-15298-2",
@@ -1083,9 +1103,11 @@
         "जांचें कि क्या तलवे में पंचर सुरक्षा (प्रतीक P) या एंटीस्टेटिक सुरक्षा (प्रतीक A) की आवश्यकता है",
         "जूते की जीभ पर लगे लेबल पर 200 जूल इम्पैक्ट रेटिंग की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 15298 Part 2 (Safety Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15298 (Part 2) : 2011 Safety Footwear",
+      "source_url": "https://archive.org/details/gov.in.is.15298.2.2011",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15298.2.2011",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-15298-3",
@@ -1114,9 +1136,11 @@
         "जूते पर अंकित श्रेणी और परीक्षण प्रमाण-पत्र की जांच करें",
         "कार्यस्थल के अनुसार तेल और एसिड प्रतिरोधी तलवे की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 15298 Part 3 (Protective Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15298 (Part 3) : 2011 Protective Footwear",
+      "source_url": "https://archive.org/details/gov.in.is.15298.3.2011",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15298.3.2011",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-15298-4",
@@ -1145,9 +1169,11 @@
         "लंबे समय तक खड़े रहने वाले कर्मचारियों के लिए हील में शॉक एब्जॉर्प्शन (प्रतीक E) की जांच करें",
         "फुटवियर QCO के तहत वैध BIS अंकन की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 15298 Part 4 (Occupational Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15298 (Part 4) : 2010 Occupational Footwear",
+      "source_url": "https://archive.org/details/gov.in.is.15298.4.2010",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15298.4.2010",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-6721",
@@ -1180,9 +1206,11 @@
         "टिकाऊ उपयोग के लिए स्ट्रैप मजबूती और सोल के लचीलेपन की जांच करें",
         "फुटवियर QCO में सूक्ष्म एवं लघु उद्योगों (MSME) के लिए दी गई समयसीमा की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 6721 (PVC Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 6721 : 2023 Sandal & Slippers (PVC Footwear)",
+      "source_url": "https://archive.org/details/gov.in.is.6721.2023",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.6721.2023",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-15844",
@@ -1213,9 +1241,11 @@
         "रनिंग और खेल गतिविधियों के लिए आउटसोल ग्रिप और हील कुशनिंग की पुष्टि करें",
         "जांचें कि क्या ब्रांड DPIIT फुटवियर क्वालिटी कंट्रोल ऑर्डर के तहत प्रमाणित है"
       ],
-      "source_title": "BIS Standards Catalogue - IS 15844 (Sports Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15844 Sports Footwear",
+      "source_url": "https://archive.org/details/gov.in.is.15844.2010",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15844.2010",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-11544",
@@ -1245,9 +1275,11 @@
         "सुनिश्चित करें कि चमड़ा लचीला हो और पैर को उचित सपोर्ट प्रदान करे",
         "स्कूल के चिकने फर्श पर फिसलने से बचने के लिए तलवे के नॉन-स्लिप होने की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 11544 (School Footwear)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 11544 Leather School Shoes",
+      "source_url": "https://archive.org/details/gov.in.is.11544.1986",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.11544.1986",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-456",
@@ -1287,9 +1319,11 @@
         "पर्यावरणीय परिस्थितियों के आधार पर तालिका 5 से न्यूनतम सीमेंट और अधिकतम जल-सीमेंट अनुपात चुनें",
         "कंक्रीट ग्रेड (M20, M25, M30 आदि) तय करें और उचित मिक्सिंग तथा तराई (curing) सुनिश्चित करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 456 (Concrete Code)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 456 : 2000 Plain and Reinforced Concrete (RCC)",
+      "source_url": "https://archive.org/details/gov.in.is.456.2000",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.456.2000",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-383",
@@ -1325,9 +1359,11 @@
         "सुनिश्चित करें कि प्राकृतिक रेत में गाद (silt) की मात्रा अनुमेय सीमा से अधिक न हो",
         "खदान से सामग्री लेने से पहले क्रशिंग और इम्पैक्ट परीक्षण करवाएं"
       ],
-      "source_title": "BIS Standards Catalogue - IS 383 (Aggregates)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 383 Aggregates for Concrete",
+      "source_url": "https://archive.org/details/gov.in.is.383.2016",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.383.2016",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-4151",
@@ -1360,9 +1396,11 @@
         "सुनिश्चित करें कि हेलमेट पर निर्माता का नाम, मॉडल, साइज और निर्माण वर्ष अंकित हो",
         "चिन-स्ट्रैप लॉक की मजबूती और वाइज़र की स्पष्ट दृश्यता की पुष्टि करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 4151 (Helmets)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 4151 : 2015 Motorcycle Helmets",
+      "source_url": "https://archive.org/details/gov.in.is.4151.2015",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.4151.2015",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-302",
@@ -1399,9 +1437,11 @@
         "सुनिश्चित करें कि उपकरण में उचित अर्थिंग टर्मिनल और थ्री-पिन प्लग लगा हो",
         "विशिष्ट उपकरण भाग (जैसे गीजर के लिए IS 302-2-21) के नियमों की समीक्षा करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 302 Part 1 (Electrical Appliances)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 302 (Part 1) Safety of Electrical Appliances",
+      "source_url": "https://archive.org/details/gov.in.is.302.1.2008",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.302.1.2008",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-694",
@@ -1439,9 +1479,11 @@
         "तांबे के तार की शुद्धता और प्रतिरोध IS 8130 के अनुरूप होने की पुष्टि करें",
         "आग से सुरक्षा के लिए हमेशा FRLS प्रमाणित बिजली के तारों का उपयोग करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 694 (PVC Cables)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 694 PVC Insulated Electric Cables",
+      "source_url": "https://archive.org/details/gov.in.is.694.2010",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.694.2010",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-13252",
@@ -1478,9 +1520,11 @@
         "BIS CRS पोर्टल पर R-नंबर डालकर ब्रांड और मॉडल के पंजीकरण की प्रामाणिकता जांचें",
         "सुनिश्चित करें कि पावर एडाप्टर भी IS 13252 सुरक्षा मानकों के अनुरूप प्रमाणित हो"
       ],
-      "source_title": "BIS Standards Catalogue - IS 13252 Part 1 (IT Equipment)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 13252 (Part 1) IT Equipment Safety",
+      "source_url": "https://archive.org/details/gov.in.is.13252.1.2010",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.13252.1.2010",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-10500",
@@ -1520,9 +1564,11 @@
         "नमूने को नजदीकी BIS या NABL मान्यता प्राप्त जल परीक्षण प्रयोगशाला में जमा करें",
         "अपनी टेस्ट रिपोर्ट के मानों की तुलना IS 10500 की स्वीकार्य सीमा तालिका से करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 10500 (Drinking Water)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 10500 : 2012 Drinking Water",
+      "source_url": "https://archive.org/details/gov.in.is.10500.2012",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.10500.2012",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "IS-3025",
@@ -1556,9 +1602,11 @@
         "परिवहन के दौरान नमूने को खराब होने से बचाने के लिए निर्धारित प्रिजर्वेशन विधि अपनाएं",
         "मानक में दिए गए निर्देशों के अनुसार केवल कैलिब्रेटेड उपकरणों से जांच करें"
       ],
-      "source_title": "BIS Standards Catalogue - IS 3025 (Water Test Methods)",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 3025 Water & Wastewater Sampling & Testing",
+      "source_url": "https://archive.org/details/gov.in.is.3025.1.1987",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.3025.1.1987",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-FIRE-EXT-001",
@@ -1596,9 +1644,11 @@
         "मानकॉनलाइन (manakonline.in) पोर्टल पर IS 15683 के तहत ISI मार्क हेतु आवेदन करें",
         "सिलेंडर पर मुद्रित ISI मार्क और सीएम/एल नंबर की बीआईएस केयर ऐप से जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 15683 - Portable Fire Extinguishers",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15683 : 2018 Portable Fire Extinguishers",
+      "source_url": "https://archive.org/details/gov.in.is.15683.2018",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15683.2018",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-GOLD-HALLMARK-001",
@@ -1638,9 +1688,11 @@
         "उपभोक्ता बीआईएस केयर ऐप में 'Verify HUID' विकल्प से 6 अंकों के कोड का सत्यापन करें",
         "हमेशा बिल में सकल वजन, शुद्ध वजन, कैरेट शुद्धता और हॉलमार्किंग शुल्क का उल्लेख करवाएं"
       ],
-      "source_title": "BIS Hallmarking Scheme - IS 1417 Gold Specifications",
-      "source_url": "https://www.bis.gov.in/hallmarking-overview/",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 1417 Gold Hallmarking & Fineness",
+      "source_url": "https://archive.org/details/gov.in.is.1417.2016",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.1417.2016",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-SILVER-HALLMARK-001",
@@ -1675,9 +1727,11 @@
         "आधिकारिक पोर्टल पर ज्वैलर के पंजीकरण का सत्यापन करें",
         "खरीद चालान (बिल) पर हॉलमार्क विवरण अवश्य दर्ज करवाएं"
       ],
-      "source_title": "BIS Silver Hallmarking Scheme - IS 2112",
-      "source_url": "https://www.bis.gov.in/hallmarking-overview/",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 2112 Silver Hallmarking & Fineness",
+      "source_url": "https://archive.org/details/gov.in.is.2112.2014",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.2112.2014",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-STEEL-STRUCT-001",
@@ -1715,9 +1769,11 @@
         "मानकॉनलाइन पोर्टल पर IS 2062 के अंतर्गत योजना-I लाइसेंस हेतु आवेदन करें",
         "संरचनात्मक निर्माण से पहले मिल टेस्ट सर्टिफिकेट (MTC) और उभरे हुए ISI मार्क की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 2062 - Structural Steel",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 2062 Hot Rolled Structural Steel",
+      "source_url": "https://archive.org/details/gov.in.is.2062.2011",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.2062.2011",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-PLYWOOD-001",
@@ -1753,9 +1809,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I के तहत आवेदन करें",
         "प्लाईवुड शीट पर मुद्रित ISI मार्क, सीएम/एल लाइसेंस नंबर और ग्रेड (MR/BWR) की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 303 - General Purpose Plywood",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 303 Plywood (MR & BWR)",
+      "source_url": "https://archive.org/details/gov.in.is.303.1989",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.303.1989",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-FAN-001",
@@ -1791,9 +1849,11 @@
         "मानकॉनलाइन पर IS 374 के अंतर्गत बीआईएस लाइसेंस हेतु आवेदन करें",
         "ऊर्जा बचत हेतु बीईई (BEE) स्टार रेटिंग का अनुपालन भी सुनिश्चित करें"
       ],
-      "source_title": "BIS Indian Standard IS 374 - Ceiling Fans",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 374 Electric Ceiling Fans",
+      "source_url": "https://archive.org/details/gov.in.is.374.1979",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.374.1979",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-GEYSER-001",
@@ -1827,9 +1887,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I के अंतर्गत उत्पाद लाइसेंस के लिए आवेदन करें",
         "ISI मार्क के साथ बीईई स्टार लेबलिंग ऊर्जा नियमों का भी अनुपालन करें"
       ],
-      "source_title": "BIS Indian Standard IS 2082 - Storage Water Heaters",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 2082 Electric Water Heaters (Geysers)",
+      "source_url": "https://archive.org/details/gov.in.is.2082.1993",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.2082.1993",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-SOLAR-001",
@@ -1865,9 +1927,11 @@
         "बीआईएस सीआरएस पोर्टल (crsbis.in) पर ऑनलाइन आवेदन कर 8 अंकों का R-नंबर प्राप्त करें",
         "प्रत्येक सोलर पैनल पर अनिवार्य मानक चिह्न और R-नंबर अंकित करें"
       ],
-      "source_title": "BIS Compulsory Registration Scheme - Solar PV Modules IS 14286",
-      "source_url": "https://www.crsbis.in/BIS/",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 14286 Solar PV Modules",
+      "source_url": "https://archive.org/details/gov.in.is.14286.2010",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.14286.2010",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-ELEC-TOYS-001",
@@ -1902,9 +1966,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I के अंतर्गत ISI मार्क लाइसेंस हेतु आवेदन करें",
         "पैकेट पर बच्चों की उपयुक्त आयु और सीएम/एल नंबर सहित ISI चिह्न मुद्रित करें"
       ],
-      "source_title": "BIS Indian Standard IS 15644 - Electric Toys Safety",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15644 Safety of Electric Toys",
+      "source_url": "https://archive.org/details/gov.in.is.15644.2006",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15644.2006",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-MILK-POWDER-001",
@@ -1939,9 +2005,11 @@
         "मानकॉनलाइन पर FSSAI लाइसेंस के साथ योजना-I ISI मार्क के लिए आवेदन करें",
         "प्रत्येक पैकेट या टिन पर अनिवार्य ISI मार्क और सीएम/एल नंबर मुद्रित करें"
       ],
-      "source_title": "BIS Indian Standard IS 1165 - Milk Powder",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 1165 Milk Powder Specification",
+      "source_url": "https://archive.org/details/gov.in.is.1165.2002",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.1165.2002",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-TYRES-001",
@@ -1976,9 +2044,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I (या विदेशी कंपनियों हेतु FMCS) के तहत आवेदन करें",
         "टायर की साइडवॉल पर उभरा हुआ ISI मार्क और सीएम/एल नंबर मोल्ड होना आवश्यक है"
       ],
-      "source_title": "BIS Indian Standard IS 15636 - Passenger Car Tyres",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 15636 Car Pneumatic Tyres",
+      "source_url": "https://archive.org/details/gov.in.is.15636.2012",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.15636.2012",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-THERMO-001",
@@ -2012,9 +2082,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I लाइसेंस के लिए आवेदन करें",
         "कांच की नली पर मुद्रित ISI मार्क, सीएम/एल नंबर और सेल्सियस पैमाने की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 3055 - Clinical Thermometers",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 3055 (Part 1) Clinical Thermometers",
+      "source_url": "https://archive.org/details/gov.in.is.3055.1.1994",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.3055.1.1994",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-MASKS-001",
@@ -2050,9 +2122,11 @@
         "मानकॉनलाइन पर योजना-I के तहत ISI मार्क हेतु आवेदन करें",
         "मास्क के बॉक्स पर ISI मार्क, क्लास (Class 1/2/3) और बैच नंबर स्पष्ट रूप से लिखें"
       ],
-      "source_title": "BIS Indian Standard IS 16289 - Medical Face Masks",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 16289 Medical Face Masks",
+      "source_url": "https://archive.org/details/gov.in.is.16289.2014",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.16289.2014",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-HAWAII-CHAPPAL-001",
@@ -2087,9 +2161,11 @@
         "सामान्य चप्पलों को औद्योगिक सुरक्षा जूतों (IS 15298) से अलग समझें",
         "यदि स्वैच्छिक प्रमाणन चाहिए तो मानकॉनलाइन पर आवेदन करें"
       ],
-      "source_title": "BIS Indian Standard IS 10702 - Rubber Hawaii Chappals",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 10702 : 2023 Rubber Hawai Chappals",
+      "source_url": "https://archive.org/details/gov.in.is.10702.2023",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.10702.2023",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-PLUG-SOCKET-001",
@@ -2125,9 +2201,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I लाइसेंस हेतु आवेदन करें",
         "प्लग और सॉकेट की बॉडी पर उभरा हुआ ISI मार्क और सीएम/एल नंबर अवश्य अंकित करें"
       ],
-      "source_title": "BIS Indian Standard IS 1293 - Plugs and Sockets",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 1293 Plugs and Socket-Outlets",
+      "source_url": "https://archive.org/details/gov.in.is.1293.2005",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.1293.2005",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-WELDING-001",
@@ -2161,9 +2239,11 @@
         "मानकॉनलाइन पर योजना-I ISI मार्क हेतु आवेदन करें",
         "पैकेट पर इलेक्ट्रोड वर्गीकरण (जैसे E6013) और ISI मार्क की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 814 - Welding Electrodes",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 814 Covered Welding Electrodes",
+      "source_url": "https://archive.org/details/gov.in.is.814.2004",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.814.2004",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-MINERAL-WATER-001",
@@ -2197,9 +2277,11 @@
         "योजना-I के तहत कारखाना निरीक्षण और पानी की सैंपलिंग करवाएं",
         "बोतल पर स्रोत का नाम, अनिवार्य ISI मार्क और सीएम/एल नंबर मुद्रित होना आवश्यक है"
       ],
-      "source_title": "BIS Indian Standard IS 13428 - Natural Mineral Water",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 13428 Packaged Natural Mineral Water",
+      "source_url": "https://archive.org/details/gov.in.is.13428.2005",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.13428.2005",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-ELEC-IRON-001",
@@ -2234,9 +2316,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I के तहत लाइसेंस के लिए आवेदन करें",
         "आयरन की नेमप्लेट पर मुद्रित ISI मार्क और सीएम/एल नंबर की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 302-2-3 - Electric Irons",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 302 (Part 2/Sec 3) Electric Irons",
+      "source_url": "https://archive.org/details/gov.in.is.302.2.3.2007",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.302.2.3.2007",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-MIXER-GRINDER-001",
@@ -2270,9 +2354,11 @@
         "मानकॉनलाइन पर योजना-I के अंतर्गत लाइसेंस आवेदन करें",
         "मिक्सर की बेस प्लेट पर उभरा हुआ ISI मार्क और सीएम/एल नंबर अवश्य मुद्रित करें"
       ],
-      "source_title": "BIS Indian Standard IS 302-2-14 - Kitchen Machines",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 302 (Part 2/Sec 14) Mixers, Grinders & Blenders",
+      "source_url": "https://archive.org/details/gov.in.is.302.2.14.2009",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.302.2.14.2009",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-CEMENT-OPC43-001",
@@ -2307,9 +2393,11 @@
         "मानकॉनलाइन पर योजना-I के अंतर्गत कारखाना निरीक्षण हेतु आवेदन करें",
         "बोरी पर स्पष्ट रूप से ISI मार्क, ग्रेड (43 ग्रेड), निर्माण का सप्ताह/वर्ष और शुद्ध वजन लिखें"
       ],
-      "source_title": "BIS Indian Standard IS 269 - Ordinary Portland Cement",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 269 Ordinary Portland Cement",
+      "source_url": "https://archive.org/details/gov.in.is.269.2015",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.269.2015",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-BATTERY-001",
@@ -2344,9 +2432,11 @@
         "crsbis.in पोर्टल पर पंजीकरण कर R-नंबर (रजिस्ट्रेशन नंबर) प्राप्त करें",
         "प्रत्येक बैटरी लेबल पर अनिवार्य मानक चिह्न और R-नंबर अंकित करें"
       ],
-      "source_title": "BIS Compulsory Registration Scheme - Batteries IS 16046",
-      "source_url": "https://www.crsbis.in/BIS/",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 16046 Lithium-ion Batteries",
+      "source_url": "https://archive.org/details/gov.in.is.16046.1.2018",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.16046.1.2018",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "STD-HELMET-IND-001",
@@ -2380,9 +2470,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I के तहत आवेदन करें",
         "हेलमेट के अंदर मोल्ड किए गए ISI मार्क और सीएम/एल नंबर की जांच करें"
       ],
-      "source_title": "BIS Indian Standard IS 2925 - Industrial Helmets",
-      "source_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/standard_review/isdetails",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 2925 Industrial Safety Helmets",
+      "source_url": "https://archive.org/details/gov.in.is.2925.1984",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.2925.1984",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     },
     {
       "id": "PROC-MANAKONLINE-001",
@@ -2495,9 +2587,11 @@
         "मानकॉनलाइन पोर्टल पर योजना-I ISI मार्क के लिए कारखाना ऑडिट आवेदन प्रस्तुत करें",
         "फ्रेम और लेंस पर ISI मानक चिह्न, निर्माता पहचान और सुरक्षा रेटिंग अनिवार्य रूप से अंकित करें"
       ],
-      "source_title": "BIS Specifications for Eye-Protectors - IS 5983 & IS 14740",
-      "source_url": "https://www.bis.gov.in/personal-protective-equipment/",
-      "verified": true
+      "source_title": "BIS Official Standard - IS 5983 Eye-Protectors / Sunglasses",
+      "source_url": "https://archive.org/details/gov.in.is.5983.1980",
+      "verified": true,
+      "doc_url": "https://archive.org/details/gov.in.is.5983.1980",
+      "portal_url": "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails"
     }
   ]
 }

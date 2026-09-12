@@ -231,6 +231,27 @@
     padding:3px 9px;font-size:12px;color:var(--ink);
   }
 
+  /* BIS Standard Card Actions */
+  .bis-card-actions{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  }
+  .bis-btn-action{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:6px;
+    font-size:13px;font-weight:600;text-decoration:none;transition:all 0.2s ease;
+  }
+  .bis-btn-doc{
+    background:#0E6A4E;color:#FFFFFF !important;box-shadow:0 1px 3px rgba(14,106,78,0.2);
+  }
+  .bis-btn-doc:hover{
+    background:#0A533C;transform:translateY(-1px);box-shadow:0 3px 8px rgba(14,106,78,0.3);
+  }
+  .bis-btn-portal{
+    background:#F0F4F2;color:#2C3944 !important;border:1px solid #D0DDD6;
+  }
+  .bis-btn-portal:hover{
+    background:#E4ECE7;border-color:#BACEC3;transform:translateY(-1px);
+  }
+
   /* Formatted Body Typography */
   .answer-content{
     font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;
@@ -303,6 +324,13 @@
   .slip.unverified{border-left-color:var(--gold);background:var(--gold-wash)}
   .slip strong{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600}
   .slip strong span{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase}
+  .slip-doc-pill{
+    font-size:11px !important;font-weight:700 !important;color:#0E6A4E !important;
+    background:#E2ECE6;padding:2px 7px;border-radius:4px;letter-spacing:0.02em;text-transform:none !important;
+  }
+  .slip-action-tip{
+    display:block;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--seal);
+  }
   .slip small{color:var(--ink-soft);font-size:12px;word-break:break-all;display:block;margin-top:2px}
   .slip:hover strong{text-decoration:underline}
 
@@ -916,6 +944,29 @@
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     color: #F8FAFC !important;
   }
+  body.dark-mode .bis-card-actions {
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  body.dark-mode .bis-btn-doc {
+    background: #10B981 !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3) !important;
+  }
+  body.dark-mode .bis-btn-doc:hover {
+    background: #34D399 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.5) !important;
+  }
+  body.dark-mode .bis-btn-portal {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #E2E8F0 !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+  }
+  body.dark-mode .bis-btn-portal:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+    border-color: #38BDF8 !important;
+    color: #38BDF8 !important;
+  }
 
   /* Dark Mode - Answer Typography & Content */
   body.dark-mode .answer-content {
@@ -984,6 +1035,14 @@
   }
   body.dark-mode .slip strong span {
     color: #38BDF8 !important;
+  }
+  body.dark-mode .slip-doc-pill {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  }
+  body.dark-mode .slip-action-tip {
+    color: #34D399 !important;
   }
   body.dark-mode .slip small {
     color: #94A3B8 !important;
@@ -1538,6 +1597,24 @@ function renderBisCard(card){
     html += `</div>`;
   }
 
+  if (card.doc_url || card.source_url){
+    const docUrl = card.doc_url || card.source_url;
+    const portalUrl = card.portal_url || "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails";
+    const readDocLabel = isHi ? "📄 आधिकारिक मानक दस्तावेज़ पढ़ें (PDF / ई-रीडर)" : "📄 Read Official Standard Document (PDF / Reader)";
+    const bisPortalLabel = isHi ? "🏛️ बीआईएस मानक पोर्टल खोजें" : "🏛️ Search on BIS Official Portal";
+
+    html += `<div class="bis-card-actions">`;
+    html += `  <a href="${docUrl}" target="_blank" rel="noopener" class="bis-btn-action bis-btn-doc" title="View official government standard document on Public Safety Standards archive">`;
+    html += `    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9H8v-2h2v2zm6 4H8v-2h8v2zm0-4h-4v-2h4v2z"/></svg>`;
+    html += `    <span>${readDocLabel}</span>`;
+    html += `  </a>`;
+    html += `  <a href="${portalUrl}" target="_blank" rel="noopener" class="bis-btn-action bis-btn-portal" title="Look up standard on BIS Connect Know Your Standards portal">`;
+    html += `    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm0 13l-7-3.18V17l7 4 7-4v-5.18L12 15z"/></svg>`;
+    html += `    <span>${bisPortalLabel}</span>`;
+    html += `  </a>`;
+    html += `</div>`;
+  }
+
   html += `</div>`;
   return html;
 }
@@ -1754,11 +1831,17 @@ function render(data, ms){
     data.citations.forEach(s => {
       const isDyn = Boolean(s.dynamic);
       const cls = isDyn ? "slip dynamic" : (s.verified ? "slip" : "slip unverified");
-      const tag = isDyn ? " · Official Portal" : (s.verified ? "" : " · " + c.unver);
-      const badgeText = isDyn ? "<span>Portal Reference</span>" : "";
+      const isStd = s.label && s.label.toUpperCase().startsWith("IS ");
+      const badgeText = isStd
+        ? '<span class="slip-doc-pill">📄 ' + (lang === "hi" ? "आधिकारिक दस्तावेज़" : "Official Document (PDF)") + '</span>'
+        : (isDyn ? '<span>' + (lang === "hi" ? "मानक संदर्भ" : "Portal Reference") + '</span>' : '');
+      const docActionHint = isStd
+        ? '<span class="slip-action-tip">' + (lang === "hi" ? "दस्तावेज़ ई-रीडर एवं PDF खोलें &rarr;" : "Open Official Document Reader & PDF &rarr;") + '</span>'
+        : '';
       html += '<a class="' + cls + '" href="' + s.source_url + '" target="_blank" rel="noopener">'
             + '<strong>' + s.label + badgeText + '</strong>'
-            + '<small>' + s.source_title + tag + '</small></a>';
+            + '<small>' + s.source_title + '</small>'
+            + docActionHint + '</a>';
     });
     html += '</div>';
   }
