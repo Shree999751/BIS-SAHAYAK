@@ -1,0 +1,218 @@
+================================================================================
+                    BIS SAHAYAK - VERCEL HOSTING & DEPLOYMENT GUIDE
+================================================================================
+
+This guide walks you through hosting your BIS Sahayak project on Vercel with 
+free global hosting, Serverless Python backend execution, and automatic SSL.
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Prerequisites
+2. How the Project is Configured for Vercel
+3. Method 1: Deploy via GitHub (Recommended & Easiest)
+4. Method 2: Deploy via Vercel CLI (Direct from Terminal)
+5. Setting Up Environment Variables on Vercel
+6. Verifying Your Live Deployment
+7. Troubleshooting & FAQ
+
+
+================================================================================
+1. PREREQUISITES
+================================================================================
+- A free Vercel Account: Sign up at https://vercel.com
+- A free Groq API Key: Get yours at https://console.groq.com/keys
+- A GitHub account (if deploying via Method 1)
+  OR Node.js / npm installed (if deploying via Method 2)
+
+
+================================================================================
+2. HOW THE PROJECT IS CONFIGURED FOR VERCEL
+================================================================================
+Your project is already pre-configured for instant Vercel deployment:
+
+  - vercel.json:
+      Routes all API calls (/api/*) to the Python Serverless function
+      and serves the frontend (frontend/index.html) through Vercel's global CDN.
+  - api/index.py:
+      Vercel Serverless Function entrypoint that hooks into your backend
+      (backend/app.py, backend/answer.py, data/knowledge_base.json).
+  - .vercelignore:
+      Excludes local dev files (.env, tests/, scratch/, logs) so deployment
+      stays clean and uploads in seconds.
+  - Zero-Dependency Core:
+      The backend runs using standard Python libraries, eliminating heavy
+      dependencies, build timeouts, or cold-start lag.
+
+
+================================================================================
+3. METHOD 1: DEPLOY VIA GITHUB (RECOMMENDED)
+================================================================================
+This is the easiest method and enables automatic redeployment whenever you push
+changes to GitHub.
+
+STEP 1: Push your project to GitHub
+------------------------------------
+In your project folder (PowerShell or Terminal):
+
+    git add .
+    git commit -m "Configure Vercel serverless deployment"
+    git push origin main
+
+(If you haven't connected a GitHub repo yet:
+    git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+    git branch -M main
+    git push -u origin main
+)
+
+STEP 2: Import into Vercel
+--------------------------
+1. Open your browser and log into https://vercel.com
+2. Click the "Add New..." button in the top right -> Select "Project".
+3. Find your repository in the list and click "Import".
+
+STEP 3: Configure Project Settings
+----------------------------------
+- Project Name: Keep default (e.g., bis-sahayak) or customize it.
+- Framework Preset: Select "Other" (or leave as auto-detected).
+- Root Directory: Leave as "./" (default).
+- Build and Output Settings: Leave default.
+
+STEP 4: Add Environment Variables
+---------------------------------
+Expand the "Environment Variables" section and add:
+
+  Variable 1:
+    Name:  GROQ_API_KEY
+    Value: gsk_your_actual_groq_api_key_here
+
+  Variable 2 (Optional, recommended model):
+    Name:  GROQ_MODEL
+    Value: openai/gpt-oss-120b
+
+STEP 5: Click Deploy
+--------------------
+Click the "Deploy" button.
+Vercel will build and deploy your application in approximately 20-30 seconds!
+You will be given a live public URL (e.g., https://bis-sahayak.vercel.app).
+
+
+================================================================================
+4. METHOD 2: DEPLOY VIA VERCEL CLI (FROM TERMINAL)
+================================================================================
+If you prefer deploying directly from your computer terminal without GitHub:
+
+STEP 1: Install Vercel CLI
+--------------------------
+In your terminal (PowerShell / Command Prompt):
+    npm install -g vercel
+
+STEP 2: Login to your Vercel account
+------------------------------------
+    vercel login
+(Follow the browser prompt to authenticate.)
+
+STEP 3: Run Initial Deployment
+------------------------------
+In the root directory of your project (c:\Users\win 10\Desktop\My-project\BIS_service_SIH26):
+    vercel
+
+Answer the setup prompts:
+  - Set up and deploy? [Y/n]               -> y
+  - Which scope?                          -> (Choose your username/team)
+  - Link to existing project? [y/N]       -> n
+  - What's your project's name?           -> bis-sahayak (or press Enter)
+  - In which directory is your code?      -> ./ (press Enter)
+  - Want to modify settings? [y/N]        -> n
+
+STEP 4: Add Environment Variables via CLI
+-----------------------------------------
+Add your Groq API key to your Vercel project:
+    vercel env add GROQ_API_KEY
+    (Select: Production, Preview, Development)
+    (Paste your key: gsk_...)
+
+Add the model (optional):
+    vercel env add GROQ_MODEL
+    (Value: openai/gpt-oss-120b)
+
+STEP 5: Deploy to Production
+----------------------------
+    vercel --prod
+
+Your live URL will be output in the terminal (e.g., https://bis-sahayak.vercel.app).
+
+
+================================================================================
+5. SETTING UP ENVIRONMENT VARIABLES ON VERCEL DASHBOARD
+================================================================================
+If you ever need to add or update API keys after deploying:
+
+1. Go to your Vercel Dashboard: https://vercel.com
+2. Select your project: "bis-sahayak"
+3. Click "Settings" (top menu) -> "Environment Variables" (left sidebar).
+4. Add or edit:
+     Key:   GROQ_API_KEY
+     Value: gsk_...
+5. Select all environments: Production, Preview, Development.
+6. Click "Save".
+7. Redeploy the latest build for new keys to take effect:
+   - Go to "Deployments" tab -> Click the "..." button on the latest deployment -> Click "Redeploy".
+
+
+================================================================================
+6. VERIFYING YOUR LIVE DEPLOYMENT
+================================================================================
+Once deployed to your URL (e.g., https://your-app.vercel.app):
+
+1. Check System Health & Config:
+   Visit in your browser:
+     https://your-app.vercel.app/api/health
+   Expected response:
+     {"status":"ok","entries":70,"groq_active":true,"model":"openai/gpt-oss-120b"}
+
+2. Check Topics & Coverage:
+   Visit:
+     https://your-app.vercel.app/api/topics
+
+3. Test Frontend UI:
+   Open:
+     https://your-app.vercel.app
+   - Try a search query: "What standard applies to packaged drinking water?"
+   - Watch the 2-second National Inspection Emblem & Phased verification animation.
+   - Click any of the 5 Indian Regional Language buttons (हिन्दी, தமிழ், తెలుగు, বাংলা, मराठी)
+     to verify real-time Indic translation.
+   - Try uploading a product photo or image to test visual item identification.
+
+
+================================================================================
+7. TROUBLESHOOTING & FAQ
+================================================================================
+Q: What happens if GROQ_API_KEY is not configured or exceeds rate limits?
+A: The system automatically and gracefully falls back to the local verified
+   knowledge base (data/knowledge_base.json) using the built-in BM25 retrieval
+   engine. The user always receives a verified response, even with zero API credits!
+
+Q: I updated code, how do I push the update to Vercel?
+A: If using GitHub (Method 1):
+     git add .
+     git commit -m "Update feature"
+     git push
+   Vercel will detect the push and automatically deploy the update!
+   If using Vercel CLI (Method 2):
+     vercel --prod
+
+Q: Getting "Function execution timed out"?
+A: Vercel Free tier has a 10-second timeout limit for serverless functions.
+   BIS Sahayak is optimized to respond in under 2-3 seconds. If your model takes
+   longer, switch to a fast versatile model by setting:
+     GROQ_MODEL = llama-3.3-70b-versatile
+
+Q: Does Vercel charge for hosting this?
+A: No! Vercel's Hobby (Free) tier includes generous serverless execution, 100GB
+   bandwidth, and unlimited preview deployments, which is more than enough for
+   hackathons, prototypes, and college submissions.
+
+================================================================================
+                       BIS SAHAYAK IS READY FOR THE CLOUD!
+================================================================================

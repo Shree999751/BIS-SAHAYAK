@@ -1,0 +1,5 @@
+# The prototype runs on the standard library alone:  python3 backend/app.py
+# Install these only if you want the FastAPI/uvicorn path.
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2.0

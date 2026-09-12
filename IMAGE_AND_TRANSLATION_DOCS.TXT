@@ -1,0 +1,176 @@
+================================================================================
+          BIS SAHAYAK - IMAGE RECOGNITION, TRANSLATION & MULTI-KEY GUIDE
+================================================================================
+
+This technical guide documents how the three core subsystems operate:
+  1. Multi-Key Groq API Failover & Offline Database System
+  2. Neural Computer Vision Image Recognition
+  3. Indic Regional Language Translation (5 Indian Languages)
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Multi-Key Groq Pool & Offline Database Fallback System
+2. In-Browser Neural Computer Vision (How Image Recognition Works)
+3. Indic Translation Engine (How Translation Works)
+4. Domain Taxonomy Mapping Table (Image to Indian Standard)
+5. How to Test & Verify in Terminal
+
+
+================================================================================
+1. MULTI-KEY GROQ POOL & OFFLINE DATABASE FALLBACK SYSTEM
+================================================================================
+
+A. How You Can Add Multiple Groq API Keys:
+------------------------------------------
+In your .env file or environment variables, you can provide multiple keys in
+three supported ways:
+
+  Option 1 (Comma-Separated):
+    GROQ_API_KEY=gsk_key1,gsk_key2,gsk_key3
+
+  Option 2 (Plural Variable):
+    GROQ_API_KEYS=gsk_key1,gsk_key2,gsk_key3
+
+  Option 3 (Numbered Variables):
+    GROQ_API_KEY_1=gsk_primary_key
+    GROQ_API_KEY_2=gsk_secondary_key
+    GROQ_API_KEY_3=gsk_tertiary_key
+
+B. Automatic Failover Behavior:
+-------------------------------
+1. When a user submits a query or translates an answer, the system loads all
+   armed keys in priority order: Key 1 -> Key 2 -> Key 3 ...
+2. If Key 1 hits a rate limit (HTTP 429), authentication error (HTTP 401/403),
+   or network timeout:
+     - The system logs a failover warning with the masked key:
+       "[Groq Key Failover] Key #1 (...mYWW) failed with HTTP 429. Switching to next key..."
+     - It immediately switches to Key 2 and retries inference.
+3. If Key 2 succeeds:
+     - The response is marked with:
+       "engine": "BIS Sahayak AI (Key #2/3 - Failover Active)"
+4. If ALL configured keys fail (or if no keys are configured):
+     - In "auto" mode, the system seamlessly switches to the OFFLINE DATABASE MODE!
+     - It searches "data/knowledge_base.json" using the BM25 retrieval engine.
+     - It returns verified Indian Standards, scope, definition, and next steps.
+     - Marked with:
+       "engine": "BIS Verified Database (Offline Fallback)"
+       "fallback": true
+     - The user experiences ZERO downtime and NEVER sees a broken screen!
+
+
+================================================================================
+2. IN-BROWSER NEURAL COMPUTER VISION (HOW IMAGE RECOGNITION WORKS)
+================================================================================
+
+A. Client-Side Neural Pipeline (TensorFlow.js + MobileNet):
+-----------------------------------------------------------
+1. The user clicks the Camera / Upload icon or selects a photo file.
+2. An HTML5 FileReader loads the image into a local DataURL.
+3. The image is rendered onto an in-memory HTML Image element.
+4. MobileNet runs directly inside the user's browser using client WebGL hardware
+   acceleration (GPU/CPU). No heavy image payloads need to be uploaded to an
+   external cloud vision service!
+5. MobileNet classifies the actual pixels and returns top prediction categories
+   along with probability confidence scores (e.g., "Crash Helmet (94% Visual Match)").
+
+B. Interactive Prediction Tags:
+-------------------------------
+The UI renders the top 4 candidate classifications as clickable preview tags
+under the uploaded thumbnail. If an image contains multiple objects, the user
+can click any tag to instantly switch focus.
+
+C. Automatic Query Synthesis:
+-----------------------------
+When an item is identified, the frontend automatically synthesizes a formal
+Indian Standards inquiry:
+  "What Indian Standard and BIS certification applies to [Product]?
+   What is the IS number, definition, and for which things is it given to?"
+and submits it to the backend.
+
+
+================================================================================
+3. INDIC TRANSLATION ENGINE (HOW TRANSLATION WORKS)
+================================================================================
+
+A. Supported Regional Languages:
+--------------------------------
+1. Hindi    (हिन्दी - hi)
+2. Tamil    (தமிழ் - ta)
+3. Telugu   (తెలుగు - te)
+4. Bengali  (বাংলা - bn)
+5. Marathi  (मराठी - mr)
+(Also supports Gujarati 'gu' and Kannada 'kn')
+
+B. Context-Preserving Government of India System Prompt:
+--------------------------------------------------------
+Generic machine translation often corrupts legal standards (e.g. translating
+"IS 1786" into random local words or mistranslating "Scheme-I").
+BIS Sahayak uses a specialized BIS translator prompt with 4 STRICT RULES:
+
+  Rule 1: PRESERVE EXACT IS NUMBERS:
+    Identifiers like IS 1786, IS 456, IS 10500, IS 4151, IS 1417 are never
+    altered.
+  Rule 2: PRESERVE OFFICIAL SCHEME DESIGNATIONS:
+    Scheme-I (ISI Mark), Scheme-II (CRS), Scheme-IV (Hallmarking), Scheme-X,
+    CM/L, HUID, and BIS Care remain intact.
+  Rule 3: PRESERVE ALL MARKDOWN FORMATTING:
+    Tables, bullet points, numbered lists, and bold highlights are preserved.
+  Rule 4: PRESERVE STRUCTURED [STANDARD_CARD] TAGS:
+    Field values (Title, Definition, Given To, Not Given To) are translated
+    into the regional language, while schema keys remain parseable.
+
+C. Zero-Lag Client-Side Caching:
+--------------------------------
+Once an answer is translated into a language (e.g., Tamil), it is stored in
+the browser's local memory (`translationCache`). When switching back and forth
+between English, Hindi, Tamil, Telugu, Bengali, and Marathi, rendering is
+INSTANTANEOUS (0 ms delay) with no redundant API calls.
+
+
+================================================================================
+4. DOMAIN TAXONOMY MAPPING TABLE (IMAGE TO INDIAN STANDARD)
+================================================================================
+
+When an image is classified by computer vision, it is mapped to the BIS domain:
+
+  Visual Classes Detected                Mapped BIS Domain & Standard
+  ------------------------------------   ---------------------------------------
+  crash helmet, hard hat, visor          -> Motorcycle Helmet (IS 4151)
+  fire extinguisher, sprayer             -> Portable Fire Extinguisher (IS 15683)
+  water bottle, bottle, jug, flask       -> Packaged Drinking Water (IS 14543/10500)
+  necklace, chain, ring, bracelet, gold  -> Gold Jewellery & HUID (IS 1417)
+  power cord, cord, wire, cable          -> PVC Electric Wire & Cable (IS 694)
+  sandal, shoe, boot, running shoe       -> Safety Footwear (IS 15298 Part 2)
+  electric iron, smoothing iron          -> Electric Clothes Iron (IS 302 Part 2)
+  blender, mixer, juicer                 -> Food Mixer / Grinder (IS 302 Part 2)
+  gas stove, stove, cooker, range        -> Domestic LPG Gas Stove (IS 4246)
+  teddy, doll, toy, plush                -> Children Toys Safety (IS 9873 Part 1)
+  cellphone, mobile phone, modem         -> Electronics & IT Goods (IS 13252)
+  pressure cooker                        -> Domestic Pressure Cooker (IS 2347)
+  cement, stone wall, brick              -> Portland Cement & Concrete (IS 1489/456)
+
+
+================================================================================
+5. HOW TO TEST & VERIFY IN TERMINAL
+================================================================================
+
+1. Run all 53 automated benchmark tests:
+   PowerShell:
+     $env:PYTHONUTF8=1; python tests/test_demo_queries.py
+
+2. Test Multi-Key Failover (Fake key #1 fails -> Key #2 succeeds):
+   PowerShell:
+     python -c "from backend.answer import compose, get_all_groq_keys; from backend.retriever import Retriever; ret = Retriever(); test_keys = 'gsk_fake_key_1,' + get_all_groq_keys()[0]; res = compose('What standard applies to packaged water?', ret.search('water', top_k=2), api_key=test_keys); print('Engine:', res['engine']); print('Failover Active:', res['key_info']['failovers'] > 0)"
+
+3. Test Pure Offline Fallback (All keys dead -> switches to local DB):
+   PowerShell:
+     python -c "import os; os.environ['GROQ_API_KEY']=''; from backend.answer import compose; from backend.retriever import Retriever; res = compose('What standard applies to helmets?', Retriever().search('helmet', top_k=2), api_key='gsk_fake'); print('Engine:', res['engine']); print('Fallback:', res['fallback'])"
+
+4. Check Server Config & Key Pool Count:
+   Visit in browser or PowerShell:
+     Invoke-RestMethod -Uri "http://localhost:8000/api/config"
+
+================================================================================
+                        END OF TECHNICAL DOCUMENTATION
+================================================================================

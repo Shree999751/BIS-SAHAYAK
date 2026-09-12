@@ -1,0 +1,64 @@
+================================================================================
+BIS SAHAYAK - EXECUTION COMMANDS
+================================================================================
+
+1. RUN THE APPLICATION (Standard Library - Zero Installs Needed)
+--------------------------------------------------------------------------------
+Windows PowerShell:
+    $env:PYTHONUTF8=1; python backend/app.py
+
+Windows Command Prompt (cmd):
+    set PYTHONUTF8=1 && python backend/app.py
+
+Linux / macOS:
+    PYTHONUTF8=1 python3 backend/app.py
+
+Then open your browser at:
+    http://localhost:8000
+
+
+2. RUN ALL TESTS & BENCHMARK QUERIES
+--------------------------------------------------------------------------------
+Windows PowerShell:
+    $env:PYTHONUTF8=1; python tests/test_demo_queries.py
+
+Windows Command Prompt (cmd):
+    set PYTHONUTF8=1 && python tests/test_demo_queries.py
+
+Linux / macOS:
+    PYTHONUTF8=1 python3 tests/test_demo_queries.py
+
+
+3. OPTIONAL: RUN WITH FASTAPI & UVICORN (Production Mode)
+--------------------------------------------------------------------------------
+Windows PowerShell / Command Prompt / Linux:
+    pip install -r requirements.txt
+    uvicorn backend.app:api --reload --port 8000
+
+
+4. TEST THE API VIA TERMINAL (cURL / PowerShell)
+--------------------------------------------------------------------------------
+PowerShell:
+    Invoke-RestMethod -Uri "http://localhost:8000/api/ask" -Method Post -ContentType "application/json" -Body '{"question": "What is the difference between ISI mark and CRS?"}'
+
+cURL (Linux / macOS / cmd):
+    curl -X POST http://localhost:8000/api/ask -H "Content-Type: application/json" -d "{\"question\": \"What standard applies to fire extinguishers?\"}"
+
+
+5. DEPLOY TO VERCEL (Free Cloud Hosting)
+--------------------------------------------------------------------------------
+Full detailed step-by-step guide is available in: VERCEL_GUIDE.TXT
+
+Method A - Via GitHub:
+    git add .
+    git commit -m "Deploy to Vercel"
+    git push origin main
+    -> Go to https://vercel.com -> Add New Project -> Import repo -> Add GROQ_API_KEY -> Deploy
+
+Method B - Via Vercel CLI:
+    npm install -g vercel
+    vercel login
+    vercel
+    vercel env add GROQ_API_KEY
+    vercel --prod
+
