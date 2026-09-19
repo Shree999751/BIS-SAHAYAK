@@ -397,12 +397,31 @@ STANDARDS_DOC_MAP = {
     },
 }
 
+# Dynamic Catalog Index for all 25,312 official Indian Standards
+CATALOG_FILE = os.path.join(ROOT_DIR, "data", "bis_standards_catalog.json")
+CATALOG_MAP = {}
+if os.path.exists(CATALOG_FILE):
+    try:
+        with open(CATALOG_FILE, "r", encoding="utf-8") as f:
+            for _citem in json.load(f):
+                _sno = _citem.get("standard_number", "").strip()
+                if _sno:
+                    CATALOG_MAP[_sno.upper()] = _citem
+                    CATALOG_MAP[_sno.replace(" ", "").upper()] = _citem
+                _mdig = re.search(r'(?:IS|SP)?[\s:\-]?([0-9]{2,5})\b', _sno)
+                if _mdig:
+                    _dstr = _mdig.group(1)
+                    if _dstr not in CATALOG_MAP:
+                        CATALOG_MAP[_dstr] = _citem
+    except Exception:
+        pass
+
 
 def resolve_standard_urls(label_or_number):
     """
     Returns (doc_url, portal_url, source_title)
     doc_url: Direct link to official standard document reader/scanned PDF on Archive.org.
-    portal_url: Official BIS Connect Know Your Standards lookup portal.
+    portal_url: Official BIS e-Sale / Connect lookup portal.
     """
     if not label_or_number:
         return (
@@ -412,13 +431,28 @@ def resolve_standard_urls(label_or_number):
         )
 
     lbl = str(label_or_number).strip()
+    lbl_upper = lbl.upper()
 
-    # 1. Exact match in catalog
+    # 1. Direct match in 25,312 e-Sale catalog
+    cat_match = CATALOG_MAP.get(lbl_upper) or CATALOG_MAP.get(lbl_upper.replace(" ", ""))
+    if not cat_match:
+        m_dig = re.search(r'(?:IS|SP)?[\s:\-]?([0-9]{2,5})\b', lbl, re.I)
+        if m_dig:
+            cat_match = CATALOG_MAP.get(m_dig.group(1))
+
+    if cat_match:
+        portal_url = cat_match.get("detail_url") or DEFAULT_PORTAL_URL
+        doc_url = cat_match.get("pdf_url") or f"https://archive.org/search?query=title%3A%22{urllib.parse.quote(cat_match.get('standard_number', ''))}%22"
+        disp_title = cat_match.get("descriptive_title") or cat_match.get("title")
+        source_title = f"BIS Official Standard - {cat_match.get('standard_number')} ({disp_title})"
+        return (doc_url, portal_url, source_title)
+
+    # 2. Match in curated STANDARDS_DOC_MAP
     if lbl in STANDARDS_DOC_MAP:
         info = STANDARDS_DOC_MAP[lbl]
         return (info["url"], DEFAULT_PORTAL_URL, info["title"])
 
-    # 2. Extract standard number and part if present
+    # 3. Extract standard number and part if present
     m = re.search(
         r"IS[\s:\-]?([0-9]{2,5})(?:\s*(?:\(Part\s*(\d+)\)|Part\s*(\d+)))?",
         lbl,
@@ -438,7 +472,6 @@ def resolve_standard_urls(label_or_number):
             info = STANDARDS_DOC_MAP[candidate_base]
             return (info["url"], DEFAULT_PORTAL_URL, info["title"])
 
-        # Fallback to authentic public safety standard search on Archive.org
         search_query = urllib.parse.quote(f'identifier:gov.in.is.{num}* OR title:"IS {num}"')
         doc_url = f"https://archive.org/search?query={search_query}"
         return (
@@ -582,7 +615,9 @@ def extract_standard_card(text, hits=None, question="", lang="en"):
             topic = top.get("topic", "")
             title_lower = top.get("title", "").lower()
             id_lower = top.get("id", "").lower()
-            if "hallmarking" in topic or "hallmark" in title_lower:
+            if "silver" in question.lower() or "चांदी" in question or "2112" in title_lower or "silver" in title_lower:
+                is_num = "IS 2112 (चांदी हॉलमार्किंग)" if is_hi else "IS 2112 (Silver Hallmarking)"
+            elif "hallmarking" in topic or "hallmark" in title_lower or "gold" in question.lower() or "1417" in question:
                 is_num = "IS 1417 (बीआईएस हॉलमार्क एवं HUID)" if is_hi else "IS 1417 (BIS Hallmark & HUID)"
             elif "fee" in id_lower or "fee" in title_lower:
                 is_num = "बीआईएस शुल्क संरचना" if is_hi else "BIS Fee Structure & MSME"
@@ -708,7 +743,7 @@ def grounded_answer(hits, lang="en"):
     return "\n".join(parts)
 
 
-def call_groq(question, hits, lang="en", api_key=None, model=None):
+def call_groq(question, hits, lang="en", api_key=None, model=None, bot_id="general"):
     """
     Calls AI engine with context grounding, specialized BIS system prompt,
     and automatic multi-key failover if a key hits rate limits (429) or errors.
@@ -735,8 +770,22 @@ def call_groq(question, hits, lang="en", api_key=None, model=None):
 
     context_str = "\n\n".join(context_blocks) if context_blocks else "No local seed matches found."
 
+    persona_header = ""
+    if bot_id and bot_id != "general":
+        try:
+            from backend.expert_bots import get_bot
+            bot_cfg = get_bot(bot_id)
+            persona_header = (
+                f"SPECIALIST PERSONA & DOMAIN MANDATE:\n"
+                f"{bot_cfg.get('system_persona')}\n"
+                f"You are actively answering as the '{bot_cfg.get('name')}'. Prioritize this domain's standards, clauses, testing parameters, and compliance pathways.\n\n"
+            )
+        except Exception:
+            pass
+
     system_prompt = (
-        "You are BIS Sahayak (बीआईएस सहायक), the official conversational AI assistant for Indian Standards "
+        persona_header
+        + "You are BIS Sahayak (बीआईएस सहायक), the official conversational AI assistant for Indian Standards "
         "and Bureau of Indian Standards (BIS) services, under the Department of Consumer Affairs, Government of India "
         "(Smart India Hackathon Problem Statement 26107).\n\n"
         "YOUR OBJECTIVES:\n"
@@ -826,45 +875,41 @@ def call_groq(question, hits, lang="en", api_key=None, model=None):
                 key_info = {
                     "key_index": key_idx,
                     "total_keys": len(all_keys),
+                    "key_masked": key_masked,
+                    "model_used": m,
                     "failovers": key_idx - 1,
-                    "model": m,
                 }
                 return clean_content, is_refusal, key_info
 
-            except urllib.error.HTTPError as err:
-                # 404 means model not found on Groq, try next candidate model with same key
-                if err.code == 404:
-                    continue
-
-                # 429 (Rate limit) or 401/403 (Invalid/Revoked key)
-                err_msg = f"HTTP {err.code}: {err.reason}"
-                import sys
-                sys.stderr.write(
-                    f"[Groq Key Failover] Key #{key_idx} ({key_masked}) failed with {err_msg}. "
-                    f"{'Switching to next key...' if key_idx < len(all_keys) else 'All keys exhausted.'}\n"
-                )
-                key_errors.append(f"Key #{key_idx} ({key_masked}): {err_msg}")
-                break  # Stop trying models for this failed key; try next key
-
-            except Exception as err:
-                import sys
-                sys.stderr.write(
-                    f"[Groq Key Failover] Key #{key_idx} ({key_masked}) error: {err}. "
-                    f"{'Switching to next key...' if key_idx < len(all_keys) else 'All keys exhausted.'}\n"
-                )
-                key_errors.append(f"Key #{key_idx} ({key_masked}): {str(err)}")
-                break
+            except urllib.error.HTTPError as http_err:
+                err_code = http_err.code
+                err_msg = http_err.read().decode("utf-8", errors="ignore")
+                key_errors.append(f"Key #{key_idx} ({key_masked}) HTTP {err_code}: {err_msg[:100]}")
+                if err_code in (401, 403, 429):
+                    break
+            except Exception as ex:
+                key_errors.append(f"Key #{key_idx} ({key_masked}) error: {str(ex)[:100]}")
+                continue
 
     raise RuntimeError(
         f"All {len(all_keys)} Groq API key(s) failed. Errors: {'; '.join(key_errors)}"
     )
 
 
-def compose(question, hits, lang="en", mode="auto", api_key=None, model=None):
+def compose(question, hits, lang="en", mode="auto", api_key=None, model=None, bot_id="general"):
     """
     Main answering orchestrator with dynamic AI, multi-key failover,
-    and automatic offline database fallback.
+    domain expert persona, and automatic offline database fallback.
     """
+    bot_name = "BIS Sahayak"
+    if bot_id and bot_id != "general":
+        try:
+            from backend.expert_bots import get_bot
+            b = get_bot(bot_id)
+            bot_name = b.get("name", "BIS Sahayak")
+        except Exception:
+            pass
+
     # 1. Dataset-only mode explicitly requested
     if mode in ("dataset", "local", "grounded"):
         if not hits:
@@ -873,8 +918,9 @@ def compose(question, hits, lang="en", mode="auto", api_key=None, model=None):
                 "citations": [],
                 "standard_card": None,
                 "mode": "no_match",
-                "engine": "BIS Verified Database (Local)",
+                "engine": f"{bot_name} Verified Database (Local)",
                 "fallback": False,
+                "bot_id": bot_id,
             }
         ans = grounded_answer(hits, lang)
         return {
@@ -882,8 +928,9 @@ def compose(question, hits, lang="en", mode="auto", api_key=None, model=None):
             "citations": build_citations(hits),
             "standard_card": extract_standard_card(ans, hits, question, lang=lang),
             "mode": "grounded",
-            "engine": "BIS Verified Database (Local)",
+            "engine": f"{bot_name} Verified Database (Local)",
             "fallback": False,
+            "bot_id": bot_id,
         }
 
     # 2. Dynamic AI mode (auto or groq) with Multi-Key Failover
@@ -892,10 +939,10 @@ def compose(question, hits, lang="en", mode="auto", api_key=None, model=None):
     if all_keys:
         try:
             ai_text, is_refusal, key_info = call_groq(
-                question, hits, lang=lang, api_key=api_key, model=model
+                question, hits, lang=lang, api_key=api_key, model=model, bot_id=bot_id
             )
 
-            engine_label = "BIS Sahayak AI"
+            engine_label = f"{bot_name} AI"
             if key_info["failovers"] > 0:
                 engine_label += f" (Key #{key_info['key_index']}/{key_info['total_keys']} - Failover Active)"
             elif key_info["total_keys"] > 1:

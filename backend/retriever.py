@@ -19,6 +19,11 @@ DATA_PATH = os.path.join(
     "data",
     "knowledge_base.json",
 )
+CATALOG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data",
+    "bis_standards_catalog.json",
+)
 
 # Words that carry no signal for this domain.
 STOPWORDS = {
@@ -114,7 +119,11 @@ SYNONYMS = {
     "time": ["timeline"],
     # Hindi / transliterated
     "sona": ["gold", "hallmark", "1417"],
-    "hallmark": ["hallmark", "huid", "1417"],
+    "gold": ["gold", "hallmark", "1417", "huid"],
+    "silver": ["silver", "hallmark", "2112", "sterling"],
+    "chandi": ["silver", "hallmark", "2112", "sterling"],
+    "चांदी": ["silver", "hallmark", "2112", "sterling"],
+    "hallmark": ["hallmark", "huid", "1417", "2112"],
     "pani": ["drinking water", "10500", "14543"],
     "jutta": ["footwear", "15298"],
     "chhad": ["steel bar", "reinforcement", "1786"],
@@ -179,7 +188,7 @@ def expand(tokens):
 
 
 class Retriever:
-    def __init__(self, path=DATA_PATH):
+    def __init__(self, path=DATA_PATH, catalog_path=CATALOG_PATH):
         with open(path, encoding="utf-8") as f:
             payload = json.load(f)
         self.entries = payload["entries"]
@@ -202,6 +211,194 @@ class Retriever:
             )
             self.docs.append(tokenize(blob))
         self._build_index()
+
+        # Load and index 25,312 Standards Catalog from standardsbis.bsbedge.com
+        self.standards_catalog = []
+        self.exact_standards_by_num = {}
+        self.standards_inverted_index = {}
+        self._load_and_index_catalog(catalog_path)
+
+    def _load_and_index_catalog(self, catalog_path):
+        if not os.path.exists(catalog_path):
+            return
+        try:
+            with open(catalog_path, encoding="utf-8") as f:
+                self.standards_catalog = json.load(f)
+        except Exception:
+            return
+
+        from collections import defaultdict
+        inv = defaultdict(list)
+
+        for idx, item in enumerate(self.standards_catalog):
+            std_no = item.get("standard_number", "").strip()
+            # Map clean numbers (e.g., "456", "IS 456", "IS 16102", "SP 16")
+            m = re.search(r'(?:IS|SP|ISO|IEC)?[\s:\-]?([0-9]{1,5})\b', std_no, re.I)
+            if m:
+                clean_digits = m.group(1)
+                if clean_digits not in self.exact_standards_by_num:
+                    self.exact_standards_by_num[clean_digits] = []
+                self.exact_standards_by_num[clean_digits].append(idx)
+
+            std_upper = std_no.upper()
+            if std_upper not in self.exact_standards_by_num:
+                self.exact_standards_by_num[std_upper] = []
+            self.exact_standards_by_num[std_upper].append(idx)
+
+            # Inverted index for fast keyword lookups over titles and descriptions
+            search_blob = f"{std_no} {item.get('title', '')} {item.get('descriptive_title', '')}"
+            words = set(tokenize(search_blob))
+            for w in words:
+                inv[w].append(idx)
+
+        self.standards_inverted_index = inv
+
+    def search_standards(self, query, top_k=5):
+        """
+        Fast lookup across 25,312 standards from standardsbis.bsbedge.com.
+        Returns matching standards with official URLs, titles, years, and PDFs.
+        """
+        if not self.standards_catalog:
+            return []
+
+        q_clean = query.strip()
+        tokens = tokenize(q_clean)
+        expanded = expand(tokens)
+
+        scores = Counter()
+
+        # Check exact standard number matches
+        for m in IS_NUMBER_RE.finditer(q_clean):
+            num_str = m.group(1)
+            for idx in self.exact_standards_by_num.get(num_str, []):
+                scores[idx] += 60.0
+
+        digits = re.findall(r'\b\d{2,5}\b', q_clean)
+        for d in digits:
+            for idx in self.exact_standards_by_num.get(d, []):
+                scores[idx] += 40.0
+
+        # Keyword matching via inverted index
+        all_terms = set(tokens + expanded)
+        for term in all_terms:
+            if term in STOPWORDS:
+                continue
+            weight = 1.5 if term in tokens else 0.7
+            for idx in self.standards_inverted_index.get(term, []):
+                scores[idx] += weight
+
+        if not scores:
+            return []
+
+        ranked = scores.most_common(top_k)
+        results = []
+        for idx, score in ranked:
+            s = self.standards_catalog[idx]
+            results.append({
+                "score": round(score, 2),
+                "standard_number": s.get("standard_number", ""),
+                "title": s.get("descriptive_title") or s.get("title", ""),
+                "year": s.get("year", ""),
+                "id": s.get("id", ""),
+                "detail_url": s.get("detail_url", ""),
+                "pdf_url": s.get("pdf_url", ""),
+                "description": s.get("description", ""),
+                "source": s.get("source", "Bureau of Indian Standards - e-Sale")
+            })
+        return results
+
+    def search_standards_paginated(self, query, page=1, limit=10):
+        """
+        Paginated lookup across 25,312 standards.
+        Returns { total, page, limit, total_pages, results }.
+        """
+        if not self.standards_catalog:
+            return {"total": 0, "page": page, "limit": limit, "total_pages": 0, "results": []}
+
+        q_clean = query.strip()
+        if not q_clean:
+            total = len(self.standards_catalog)
+            total_pages = max(1, math.ceil(total / limit))
+            page = max(1, min(page, total_pages))
+            start = (page - 1) * limit
+            slice_items = self.standards_catalog[start : start + limit]
+            results = []
+            for s in slice_items:
+                results.append({
+                    "score": 1.0,
+                    "standard_number": s.get("standard_number", ""),
+                    "title": s.get("descriptive_title") or s.get("title", ""),
+                    "year": s.get("year", ""),
+                    "id": s.get("id", ""),
+                    "detail_url": s.get("detail_url", ""),
+                    "pdf_url": s.get("pdf_url", ""),
+                    "description": s.get("description", ""),
+                    "source": s.get("source", "Bureau of Indian Standards - e-Sale")
+                })
+            return {
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "total_pages": total_pages,
+                "results": results
+            }
+
+        tokens = tokenize(q_clean)
+        expanded = expand(tokens)
+
+        scores = Counter()
+
+        for m in IS_NUMBER_RE.finditer(q_clean):
+            num_str = m.group(1)
+            for idx in self.exact_standards_by_num.get(num_str, []):
+                scores[idx] += 60.0
+
+        digits = re.findall(r'\b\d{2,5}\b', q_clean)
+        for d in digits:
+            for idx in self.exact_standards_by_num.get(d, []):
+                scores[idx] += 40.0
+
+        all_terms = set(tokens + expanded)
+        for term in all_terms:
+            if term in STOPWORDS:
+                continue
+            weight = 1.5 if term in tokens else 0.7
+            for idx in self.standards_inverted_index.get(term, []):
+                scores[idx] += weight
+
+        if not scores:
+            return {"total": 0, "page": page, "limit": limit, "total_pages": 0, "results": []}
+
+        total = len(scores)
+        total_pages = max(1, math.ceil(total / limit))
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * limit
+
+        ranked = scores.most_common()
+        page_ranked = ranked[start : start + limit]
+
+        results = []
+        for idx, score in page_ranked:
+            s = self.standards_catalog[idx]
+            results.append({
+                "score": round(score, 2),
+                "standard_number": s.get("standard_number", ""),
+                "title": s.get("descriptive_title") or s.get("title", ""),
+                "year": s.get("year", ""),
+                "id": s.get("id", ""),
+                "detail_url": s.get("detail_url", ""),
+                "pdf_url": s.get("pdf_url", ""),
+                "description": s.get("description", ""),
+                "source": s.get("source", "Bureau of Indian Standards - e-Sale")
+            })
+
+        return {
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages,
+            "results": results
+        }
 
     def _build_index(self):
         self.N = len(self.docs)
@@ -229,7 +426,7 @@ class Retriever:
             score += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * dl / self.avg_len))
         return score
 
-    def search(self, query, top_k=3, min_score=0.8):
+    def search(self, query, top_k=3, min_score=0.8, bot_id="general"):
         q_lower = query.lower()
         if any(unsupported in q_lower for unsupported in [
             "submarine", "पनडुब्बी", "aircraft landing", "landing gear", "pizza", "पिज्जा",
@@ -242,51 +439,124 @@ class Retriever:
         if not q:
             return []
 
-        asked_numbers = {m.group(1) for m in IS_NUMBER_RE.finditer(query)}
+        # Domain expert bot configuration
+        bot_priority_stds = set()
+        bot_boost_kws = set()
+        if bot_id and bot_id != "general":
+            try:
+                from backend.expert_bots import get_bot
+                bot_cfg = get_bot(bot_id)
+                bot_priority_stds = set(bot_cfg.get("priority_standards", []))
+                bot_boost_kws = {k.lower() for k in bot_cfg.get("boost_keywords", [])}
+            except Exception:
+                pass
 
+        asked_numbers = {m.group(1) for m in IS_NUMBER_RE.finditer(query)}
+        digits = set(re.findall(r'\b\d{2,5}\b', query))
+        all_asked_nums = asked_numbers.union(digits)
+
+        # 1. Search regulatory knowledge base (Scheme-I, CRS, Hallmarking, FMCS, fees)
         scored = []
         for i, entry in enumerate(self.entries):
             score = self._bm25(q, i)
 
-            # Keyword field is curated, so a hit there is worth more than a
-            # chance word match inside the summary.
+            # Keyword field is curated
             kw = {t for k in entry.get("keywords", []) for t in tokenize(k)}
             overlap = kw.intersection(q)
             score += 0.9 * len(overlap)
 
-            # Overlap on domain-generic words does not count as evidence.
             specific = overlap - GENERIC
 
-            # Exact IS number in the query is close to a certain answer.
             num = entry.get("is_number", "")
-            exact_number = bool(asked_numbers and any(n in num for n in asked_numbers))
+            exact_number = bool(all_asked_nums and any(n in num for n in all_asked_nums))
             if exact_number:
+                score += 15.0
+
+            # Domain expert bot boost on regulatory entries
+            if bot_priority_stds and any(ps in num for ps in bot_priority_stds):
                 score += 12.0
+            if bot_boost_kws:
+                entry_kws = {k.lower() for k in entry.get("keywords", [])}
+                kw_overlap = entry_kws.intersection(bot_boost_kws)
+                if kw_overlap:
+                    score += 3.5 * min(len(kw_overlap), 4)
 
             if score > 0:
                 scored.append((score, entry, len(specific), exact_number))
 
-        # Every hit has to earn its place. A match on nothing but domain-generic
-        # words is not evidence that we hold the answer, so it is dropped
-        # rather than ranked. If that empties the list, we say we don't know.
         confident = [
             (s, e)
             for s, e, specific, exact in scored
             if s >= min_score and (exact or specific >= 1 or s >= 9.0)
         ]
+
+        # 2. Search 25,312 Standards Catalog (standardsbis.bsbedge.com)
+        cat_hits = self.search_standards(query, top_k=5 if bot_id != "general" else 3)
+        for ch in cat_hits:
+            if ch["score"] >= 1.5:
+                std_no = ch["standard_number"]
+                is_exact = bool(all_asked_nums and any(n in std_no for n in all_asked_nums))
+                synthetic_score = (ch["score"] + 20.0) if is_exact else (ch["score"] + 5.0)
+
+                # Domain expert bot boost on standards catalog
+                if bot_priority_stds and any(ps in std_no for ps in bot_priority_stds):
+                    synthetic_score += 14.0
+                if bot_boost_kws:
+                    ch_text = (ch["title"] + " " + ch.get("description", "")).lower()
+                    matched_kws = [k for k in bot_boost_kws if k in ch_text]
+                    if matched_kws:
+                        synthetic_score += 3.0 * min(len(matched_kws), 3)
+
+                cat_entry = {
+                    "id": f"STD-{ch['id'] or std_no.replace(' ', '_')}",
+                    "topic": "standard",
+                    "is_number": std_no,
+                    "title": f"{std_no} - {ch['title']}",
+                    "summary": (
+                        f"{std_no} ({ch['title']}) is an official Indian Standard published by the Bureau of Indian Standards (BIS). "
+                        f"Year/Edition: {ch['year'] or 'Current'}. "
+                        + (f"Scope: {ch['description'][:250]}... " if ch.get("description") else "")
+                        + f"Available on official BIS e-Sale Portal: {ch['detail_url']}"
+                    ),
+                    "summary_hi": (
+                        f"{std_no} ({ch['title']}) भारतीय मानक ब्यूरो (BIS) द्वारा प्रकाशित आधिकारिक मानक है। "
+                        f"संस्करण वर्ष: {ch['year'] or 'नवीनतम'}। आधिकारिक ई-सेल पोर्टल: {ch['detail_url']}"
+                    ),
+                    "keywords": [std_no, ch["title"], "indian standard", "bis"],
+                    "related": [],
+                    "next_steps": [
+                        f"View standard details and purchasing on official BIS portal: {ch['detail_url']}",
+                        f"Consult official public safety PDF on Archive.org: {ch['pdf_url']}" if ch.get("pdf_url") else "Verify product conformity against this standard"
+                    ],
+                    "next_steps_hi": [
+                        f"आधिकारिक BIS ई-सेल पोर्टल पर मानक देखें: {ch['detail_url']}",
+                        f"पब्लिक सेफ्टी कोड PDF डाउनलोड करें: {ch['pdf_url']}" if ch.get("pdf_url") else "मानक के अनुसार उत्पाद प्रमाणन की जांच करें"
+                    ],
+                    "source_title": "Bureau of Indian Standards - e-Sale",
+                    "source_url": ch["detail_url"],
+                    "portal_url": ch["detail_url"],
+                    "doc_url": ch["pdf_url"],
+                    "verified": True,
+                    "is_catalog_match": True,
+                    "year": ch["year"],
+                }
+                confident.append((synthetic_score, cat_entry))
+
         confident.sort(key=lambda p: p[0], reverse=True)
         return [{"score": round(s, 2), "entry": e} for s, e in confident[:top_k]]
 
 
 if __name__ == "__main__":
     r = Retriever()
+    print(f"Loaded {len(r.entries)} KB entries and {len(r.standards_catalog)} official standards.")
     for q in [
-        "I make helmets in Agra, what certification do I need",
-        "how do I check if my gold is real",
         "IS 456",
-        "मुझे पानी की जाँच करवानी है",
-        "which standard for safety shoes",
+        "IS 16102",
+        "Which standard applies to concrete and reinforced cement?",
+        "What standard applies to helmets?",
+        "drinking water standard IS 10500",
     ]:
-        print("\nQ:", q)
-        for hit in r.search(q):
-            print("  ", hit["score"], hit["entry"]["title"])
+        print(f"\n--- Query: '{q}' ---")
+        for hit in r.search(q, top_k=2):
+            print(f"  [{hit['score']}] {hit['entry']['title']} (Source: {hit['entry'].get('source_title', 'KB')})")
+

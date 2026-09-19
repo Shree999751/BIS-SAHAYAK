@@ -18,7 +18,7 @@ import os
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,6 +30,7 @@ from answer import (
     is_groq_configured,
     translate_text,
 )  # noqa: E402
+from expert_bots import get_bot, list_bots  # noqa: E402
 from retriever import Retriever  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,6 +52,7 @@ def handle_ask(payload, header_api_key=None):
     image_name = payload.get("image_name")
     identified_item = (payload.get("identified_item") or "").strip()
     visual_predictions = payload.get("visual_predictions") or []
+    bot_id = payload.get("bot_id") or "general"
 
     # Prioritize actual visual content analysis over file names
     if not question and identified_item:
@@ -68,16 +70,19 @@ def handle_ask(payload, header_api_key=None):
     mode = payload.get("mode", "auto")
     api_key = payload.get("api_key") or header_api_key
 
-    hits = RETRIEVER.search(question, top_k=3)
+    hits = RETRIEVER.search(question, top_k=3, bot_id=bot_id)
     result = compose(
         question=question,
         hits=hits,
         lang=lang,
         mode=mode,
         api_key=api_key,
+        model=payload.get("model"),
+        bot_id=bot_id,
     )
     result["lang"] = lang
     result["question"] = question
+    result["bot_id"] = bot_id
     if image_data:
         result["image_data"] = image_data
     if image_name:
@@ -127,6 +132,28 @@ def handle_topics():
     }, 200
 
 
+def handle_bots():
+    bots = list_bots()
+    return {
+        "bots": bots,
+        "total": len(bots),
+    }, 200
+
+
+def handle_standards_search(query, limit=10, page=1):
+    paginated = RETRIEVER.search_standards_paginated(query, page=page, limit=limit)
+    return {
+        "query": query,
+        "total_standards": len(RETRIEVER.standards_catalog),
+        "total": paginated["total"],
+        "page": paginated["page"],
+        "limit": paginated["limit"],
+        "total_pages": paginated["total_pages"],
+        "count": len(paginated["results"]),
+        "results": paginated["results"],
+    }, 200
+
+
 def handle_config(header_api_key=None):
     server_keys = get_all_groq_keys()
     all_keys = get_all_groq_keys(header_api_key)
@@ -139,7 +166,9 @@ def handle_config(header_api_key=None):
         "server_keys_count": len(server_keys),
         "model": get_groq_model(),
         "entries": len(RETRIEVER.entries),
+        "total_standards": len(RETRIEVER.standards_catalog),
         "default_mode": "auto",
+        "expert_bots": list_bots(),
         "supported_languages": [
             {"code": "en", "name": "English", "native": "English"},
             {"code": "hi", "name": "Hindi", "native": "हिन्दी"},
@@ -191,16 +220,37 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
+        query_params = parse_qs(parsed.query)
         header_key = self.headers.get("X-Groq-Api-Key") or self.headers.get("X-Grok-Api-Key")
+
+        if path == "/api/standards/search":
+            q = query_params.get("q", [""])[0]
+            limit = int(query_params.get("limit", [10])[0])
+            page = int(query_params.get("page", [1])[0])
+            obj, code = handle_standards_search(q, limit, page)
+            return self._send(obj, code)
+        if path == "/api/standards/stats":
+            return self._send({
+                "total_standards": len(RETRIEVER.standards_catalog),
+                "total_kb_entries": len(RETRIEVER.entries),
+                "source": "Bureau of Indian Standards - e-Sale (standardsbis.bsbedge.com)",
+                "status": "ready"
+            })
+        if path == "/api/bots":
+            obj, code = handle_bots()
+            return self._send(obj, code)
         if path == "/api/health":
             all_keys = get_all_groq_keys(header_key)
             return self._send({
                 "status": "ok",
                 "entries": len(RETRIEVER.entries),
+                "total_standards": len(RETRIEVER.standards_catalog),
                 "groq_active": len(all_keys) > 0,
                 "groq_keys_count": len(all_keys),
                 "model": get_groq_model(),
+                "bots_count": len(list_bots()),
             })
         if path == "/api/config":
             obj, code = handle_config(header_key)
@@ -214,7 +264,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         req_path = urlparse(self.path).path
-        if req_path not in ("/api/ask", "/api/translate"):
+        if req_path not in ("/api/ask", "/api/translate", "/api/standards/search"):
             return self._send({"error": "not found"}, 404)
         length = int(self.headers.get("Content-Length") or 0)
         try:
@@ -224,7 +274,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._send({"error": "bad json"}, 400)
 
         header_key = self.headers.get("X-Groq-Api-Key") or self.headers.get("X-Grok-Api-Key")
-        if req_path == "/api/translate":
+        if req_path == "/api/standards/search":
+            q = payload.get("query") or payload.get("q") or ""
+            limit = int(payload.get("limit", 10))
+            page = int(payload.get("page", 1))
+            obj, code = handle_standards_search(q, limit, page)
+        elif req_path == "/api/translate":
             obj, code = handle_translate(payload, header_api_key=header_key)
         else:
             obj, code = handle_ask(payload, header_api_key=header_key)
@@ -277,6 +332,19 @@ try:
     def translate(body: dict, x_groq_api_key: str | None = Header(default=None)):
         return handle_translate(body, header_api_key=x_groq_api_key)[0]
 
+    @api.get("/api/standards/search")
+    def standards_search(q: str = "", limit: int = 10, page: int = 1):
+        return handle_standards_search(q, limit, page)[0]
+
+    @api.get("/api/standards/stats")
+    def standards_stats():
+        return {
+            "total_standards": len(RETRIEVER.standards_catalog),
+            "total_kb_entries": len(RETRIEVER.entries),
+            "source": "Bureau of Indian Standards - e-Sale (standardsbis.bsbedge.com)",
+            "status": "ready"
+        }
+
     @api.get("/")
     def index():
         return FileResponse(os.path.join(FRONTEND, "index.html"))
@@ -290,6 +358,7 @@ if __name__ == "__main__":
     keys = get_all_groq_keys()
     print(f"BIS Sahayak running on http://localhost:{port}")
     print(f"Knowledge base: {len(RETRIEVER.entries)} entries")
+    print(f"Official Standards: {len(RETRIEVER.standards_catalog)} standards indexed (standardsbis.bsbedge.com)")
     print(f"Groq API pool configured: {'Yes (' + str(len(keys)) + ' key(s) armed, ' + get_groq_model() + ')' if keys else 'No (Local dataset fallback mode active)'}")
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     server.daemon_threads = True
