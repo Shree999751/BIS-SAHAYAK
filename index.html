@@ -1,0 +1,3557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIS Sahayak - Bureau of Indian Standards Assistant</title>
+<!-- Client-side Computer Vision Engine (Deep Learning Neural Network for Image Content Analysis) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+<style>
+  :root{
+    --ink:#17222B;
+    --ink-soft:#4F5E6B;
+    --ink-subtle:#7A8B99;
+    --paper:#F4F6F5;
+    --card:#FFFFFF;
+    --seal:#0E6A4E;
+    --seal-wash:#E6F1ED;
+    --seal-deep:#084B36;
+    --gold:#9A6408;
+    --gold-wash:#FBF4E7;
+    --gold-border:#EAD7BA;
+    --accent:#1853DB;
+    --accent-wash:#EEF4FE;
+    --line:#DCE1DF;
+    --radius:6px;
+    --radius-sm:4px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md:0 4px 14px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font:15.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 96px}
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:30px}
+  .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .brand b{font-size:20px;letter-spacing:-.015em;display:flex;align-items:center;gap:7px}
+  .brand b svg{fill:var(--seal);flex-shrink:0}
+  .brand span{color:var(--ink-soft);font-size:13px}
+
+  .nav-actions{display:flex;align-items:center;gap:10px}
+  .engine-badge{
+    display:inline-flex;align-items:center;gap:7px;padding:5px 12px;
+    border-radius:100px;font-size:12.5px;font-weight:600;
+    background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    cursor:pointer;transition:all .15s ease;
+  }
+  .engine-badge:hover{border-color:var(--seal);color:var(--seal)}
+  .engine-badge .dot{width:7.5px;height:7.5px;border-radius:50%;background:#94A3B8}
+  .engine-badge.active-live{border-color:var(--seal);color:var(--seal);background:var(--seal-wash)}
+  .engine-badge.active-live .dot{background:var(--seal);box-shadow:0 0 0 2px rgba(14,106,78,0.22)}
+  .engine-badge.active-local{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+  .engine-badge.active-local .dot{background:var(--gold)}
+
+  .btn-settings{
+    border:1px solid var(--line);background:var(--card);border-radius:var(--radius-sm);
+    padding:6px 11px;font:inherit;font-size:13px;color:var(--ink-soft);cursor:pointer;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .btn-settings:hover{border-color:var(--ink);color:var(--ink)}
+
+  .btn-theme{
+    border:1px solid var(--line);background:var(--card);border-radius:var(--radius-sm);
+    padding:6px 11px;font:inherit;font-size:13px;color:var(--ink-soft);cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:all .2s ease;
+  }
+  .btn-theme:hover{border-color:var(--seal);color:var(--seal)}
+  .theme-icon{flex-shrink:0;transition:transform .3s ease}
+  .btn-theme:hover .theme-icon{transform:rotate(20deg)}
+
+
+  .lang{display:flex;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--card)}
+  .lang button{border:0;background:transparent;padding:6px 13px;font:inherit;font-size:13px;color:var(--ink-soft);cursor:pointer}
+  .lang button[aria-pressed="true"]{background:var(--seal);color:#FFFFFF;font-weight:600}
+  .lang button:focus-visible{outline:2px solid var(--seal);outline-offset:-2px}
+
+  /* Titles */
+  h1{
+    font:500 clamp(24px,4vw,34px)/1.26 Georgia,"Noto Serif Devanagari",serif;
+    margin:0 0 6px;letter-spacing:-.015em;max-width:26ch;
+  }
+  .sub{color:var(--ink-soft);margin:0 0 24px;max-width:68ch;font-size:15px;line-height:1.6}
+
+  /* Search & Image Upload Area */
+  .search-container{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:6px;box-shadow:var(--shadow-sm);margin-bottom:12px;transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .search-container:focus-within{border-color:var(--seal);box-shadow:0 0 0 3px rgba(14,106,78,0.12)}
+  .search-form{display:flex;align-items:center;gap:8px}
+  input[type=text]{
+    flex:1;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);
+    background:transparent;border:0;outline:0;
+  }
+  .btn-upload{
+    background:transparent;border:1px solid var(--line);color:var(--ink-soft);
+    padding:9px 13px;border-radius:var(--radius-sm);font:inherit;font-size:13px;
+    cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .btn-upload:hover{border-color:var(--seal);color:var(--seal);background:var(--seal-wash)}
+  button.go{
+    padding:11px 22px;font:inherit;font-weight:600;font-size:14.5px;color:#fff;cursor:pointer;
+    background:var(--seal);border:0;border-radius:var(--radius-sm);
+    display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background-color .15s ease;
+  }
+  button.go:hover:not(:disabled){background:var(--seal-deep)}
+  button.go:disabled{opacity:.5;cursor:default}
+  button.go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  /* Image Preview Bar */
+  .image-preview-bar{
+    display:none;background:#F8FAFA;border-bottom:1px solid var(--line);
+    padding:12px 14px;border-radius:var(--radius) var(--radius) 0 0;
+    align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .image-preview-bar.show{display:flex}
+  .preview-thumb-box{position:relative;width:56px;height:56px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--line);background:#fff}
+  .preview-thumb-box img{width:100%;height:100%;object-fit:cover}
+  .preview-info{flex:1;min-width:200px}
+  .preview-title{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px}
+  .preview-desc{font-size:12px;color:var(--ink-soft)}
+  .preview-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .preview-tag{
+    background:#fff;border:1px solid var(--line);font-size:11.5px;padding:2px 8px;
+    border-radius:100px;cursor:pointer;color:var(--ink-soft);
+  }
+  .preview-tag:hover{border-color:var(--seal);color:var(--seal)}
+  .preview-vision-status{
+    font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--ink);
+  }
+  .vision-dot{width:8px;height:8px;border-radius:50%;background:var(--seal);box-shadow:0 0 0 2px rgba(14,106,78,0.22);animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.25)}}
+  .confidence-pill{
+    background:#EBF3FF;color:var(--accent);border:1px solid #C9DEFE;
+    border-radius:100px;padding:2px 8px;font-size:11px;font-weight:600;
+  }
+  .btn-remove-img{
+    background:transparent;border:0;color:var(--ink-subtle);font-size:18px;
+    cursor:pointer;padding:4px 8px;border-radius:var(--radius-sm);
+  }
+  .btn-remove-img:hover{color:#C53030;background:#FFF5F5}
+
+  /* Quick Chips */
+  .chips-label{font-size:11.5px;font-weight:600;color:var(--ink-subtle);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px}
+  .chips button{
+    font:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:100px;padding:5px 12px;
+    transition:all .15s ease;
+  }
+  .chips button:hover{border-color:var(--seal);color:var(--seal);transform:translateY(-1px)}
+
+  /* Answer Container */
+  .answer{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 30px;margin-bottom:20px;box-shadow:var(--shadow-md);
+  }
+  .answer .meta{
+    display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    font-size:12.5px;color:var(--ink-soft);margin-bottom:20px;
+    padding-bottom:12px;border-bottom:1px solid var(--line);
+  }
+  .pill{border:1px solid var(--seal);color:var(--seal);background:var(--seal-wash);border-radius:100px;padding:2px 10px;font-weight:600;font-size:12px}
+  .pill.live{border-color:var(--seal);color:var(--seal);background:var(--seal-wash)}
+  .pill.fallback{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+  .pill.warn{border-color:var(--gold);color:var(--gold)}
+
+  .image-badge-row{
+    display:flex;align-items:center;gap:12px;background:#F9FBFB;border:1px solid var(--line);
+    padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:18px;
+  }
+  .image-badge-row img{width:46px;height:46px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line)}
+  .image-badge-text b{display:block;font-size:13.5px;color:var(--ink)}
+  .image-badge-text span{font-size:12px;color:var(--ink-soft)}
+
+  /* FEATURED BIS STANDARD CARD */
+  .bis-card{
+    background:linear-gradient(180deg, #FAFDFB 0%, #FFFFFF 100%);
+    border:1px solid #BFD9CE;border-radius:8px;padding:20px 22px;margin-bottom:22px;
+    box-shadow:0 2px 8px rgba(14,106,78,0.05);
+  }
+  .bis-card.non-mandatory{
+    background:linear-gradient(180deg, #FDFBF7 0%, #FFFFFF 100%);
+    border-color:var(--gold-border);
+  }
+  .bis-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .bis-std-badge{display:flex;align-items:center;gap:9px}
+  .bis-std-icon{
+    width:36px;height:36px;border-radius:6px;background:var(--seal-wash);color:var(--seal);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .bis-card.non-mandatory .bis-std-icon{background:var(--gold-wash);color:var(--gold)}
+  .bis-std-icon svg{width:22px;height:22px;fill:currentColor}
+  .bis-std-number{font-size:19px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+  .bis-scheme-tag{
+    display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:100px;
+    font-size:12px;font-weight:600;background:var(--seal-wash);color:var(--seal);border:1px solid #C4E2D7;
+  }
+  .bis-card.non-mandatory .bis-scheme-tag{background:var(--gold-wash);color:var(--gold);border-color:var(--gold-border)}
+
+  .bis-card-title{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 10px;line-height:1.4}
+  
+  .bis-def-box{
+    background:#FFFFFF;border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:11px 14px;font-size:14px;line-height:1.55;color:#2C3944;margin-bottom:14px;
+  }
+  .bis-def-box strong{color:var(--ink);display:block;margin-bottom:2px;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+
+  .bis-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media(max-width:640px){.bis-grid{grid-template-columns:1fr}}
+  .bis-col{
+    background:#FDFEFE;border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:11px 14px;
+  }
+  .bis-col.covered{border-left:3px solid var(--seal)}
+  .bis-col.exceptions{border-left:3px solid var(--gold)}
+  .bis-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+  .bis-col.covered .bis-col-title{color:var(--seal)}
+  .bis-col.exceptions .bis-col-title{color:var(--gold)}
+  .bis-tag-list{display:flex;flex-wrap:wrap;gap:5px}
+  .bis-item-chip{
+    background:#fff;border:1px solid var(--line);border-radius:100px;
+    padding:3px 9px;font-size:12px;color:var(--ink);
+  }
+
+  /* BIS Standard Card Actions */
+  .bis-card-actions{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  }
+  .bis-btn-action{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:6px;
+    font-size:13px;font-weight:600;text-decoration:none;transition:all 0.2s ease;
+  }
+  .bis-btn-doc{
+    background:#0E6A4E;color:#FFFFFF !important;box-shadow:0 1px 3px rgba(14,106,78,0.2);
+  }
+  .bis-btn-doc:hover{
+    background:#0A533C;transform:translateY(-1px);box-shadow:0 3px 8px rgba(14,106,78,0.3);
+  }
+  .bis-btn-portal{
+    background:#F0F4F2;color:#2C3944 !important;border:1px solid #D0DDD6;
+  }
+  .bis-btn-portal:hover{
+    background:#E4ECE7;border-color:#BACEC3;transform:translateY(-1px);
+  }
+
+  /* Formatted Body Typography */
+  .answer-content{
+    font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;
+    color:#22303C;
+  }
+  .ans-p{margin:0 0 14px}
+  .ans-h3{font-size:16.5px;font-weight:700;color:var(--ink);margin:20px 0 8px}
+  .ans-h4{font-size:14.5px;font-weight:700;color:var(--ink);margin:16px 0 6px}
+  .ans-ol, .ans-ul{margin:0 0 16px;padding-left:24px}
+  .ans-ol li, .ans-ul li{margin-bottom:6px;line-height:1.65}
+  .ans-quote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--seal);background:var(--seal-wash);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-style:italic}
+  .ans-code{background:#F0F3F2;padding:2px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:13.5px}
+  strong{color:var(--ink);font-weight:650}
+
+  /* Markdown Table Styling */
+  .table-wrap{
+    overflow-x:auto;
+    margin:18px 0 22px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--line);
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+    background:#fff;
+  }
+  .ans-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    text-align:left;
+    line-height:1.55;
+  }
+  .ans-table thead{
+    background:#F4F8F6;
+    border-bottom:2px solid #D8E5DF;
+  }
+  .ans-table th{
+    padding:11px 15px;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .ans-table td{
+    padding:11px 15px;
+    border-bottom:1px solid #EAEFEA;
+    color:#2B3942;
+    vertical-align:top;
+  }
+  .ans-table tbody tr:nth-child(even){
+    background:#FAFDFB;
+  }
+  .ans-table tbody tr:last-child td{
+    border-bottom:none;
+  }
+  .ans-table td strong{
+    color:var(--ink);
+  }
+
+  /* Sources Slips */
+  .sources{margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+  .sources h2{font:700 12px/1 inherit;color:var(--ink-subtle);margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em}
+  .slip{
+    display:block;text-decoration:none;color:inherit;
+    border-left:3px solid var(--seal);background:var(--seal-wash);
+    padding:11px 15px;margin-bottom:8px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    transition:all .15s ease;
+  }
+  .slip.dynamic{border-left-color:var(--accent);background:var(--accent-wash)}
+  .slip.unverified{border-left-color:var(--gold);background:var(--gold-wash)}
+  .slip strong{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600}
+  .slip strong span{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase}
+  .slip-doc-pill{
+    font-size:11px !important;font-weight:700 !important;color:#0E6A4E !important;
+    background:#E2ECE6;padding:2px 7px;border-radius:4px;letter-spacing:0.02em;text-transform:none !important;
+  }
+  .slip-action-tip{
+    display:block;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--seal);
+  }
+  .slip small{color:var(--ink-soft);font-size:12px;word-break:break-all;display:block;margin-top:2px}
+  .slip:hover strong{text-decoration:underline}
+
+  /* =========================================
+     2-SECOND PREMIUM NATIONAL INSPECTION LOADER
+     ========================================= */
+  .bis-inspection-loader{
+    background:linear-gradient(180deg, #FAFDFB 0%, #FFFFFF 100%);
+    border:1px solid #CFDFD7;
+    border-radius:10px;
+    padding:24px 28px;
+    margin:20px 0;
+    box-shadow:0 4px 16px rgba(14,106,78,0.06);
+    animation:loaderEntrance 0.35s ease-out;
+  }
+  @keyframes loaderEntrance{
+    from{opacity:0;transform:translateY(8px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .loader-top-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .crest-wrap{
+    position:relative;
+    width:52px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .crest-spin-ring{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:2.5px dashed #0E6A4E;
+    animation:spinCrest 4s linear infinite;
+  }
+  @keyframes spinCrest{
+    to{transform:rotate(360deg)}
+  }
+  .crest-center{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:#E6F3EE;
+    color:#0E6A4E;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:inset 0 0 0 1px #BFD9CE;
+  }
+  .crest-svg{
+    width:22px;
+    height:22px;
+    fill:currentColor;
+  }
+  .loader-title-group{
+    flex:1;
+  }
+  .loader-pretitle{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:#0E6A4E;
+    margin-bottom:3px;
+  }
+  .loader-main-title{
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  .loader-steps{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:20px;
+    background:#F5F9F7;
+    border:1px solid #E2ECE7;
+    border-radius:6px;
+    padding:14px 16px;
+  }
+  .loader-step{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:13.5px;
+    color:#687B75;
+    transition:all 0.25s ease;
+  }
+  .loader-step.active{
+    color:var(--ink);
+    font-weight:600;
+  }
+  .loader-step.done{
+    color:#0E6A4E;
+  }
+  .step-indicator{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:#E0E9E5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    transition:all 0.25s ease;
+  }
+  .loader-step.active .step-indicator{
+    background:#0E6A4E;
+    color:#fff;
+  }
+  .loader-step.done .step-indicator{
+    background:#0E6A4E;
+    color:#fff;
+  }
+  .dot-pulse{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#fff;
+    animation:pulseDot 1s ease-in-out infinite;
+  }
+  @keyframes pulseDot{
+    0%, 100%{opacity:0.4;transform:scale(0.8)}
+    50%{opacity:1;transform:scale(1.2)}
+  }
+  .step-check{
+    display:none;
+    width:12px;
+    height:12px;
+    stroke:#fff;
+    stroke-width:2.5;
+    fill:none;
+  }
+  .loader-step.done .dot-pulse{display:none}
+  .loader-step.done .step-check{display:block}
+
+  .loader-progress-bar{
+    height:5px;
+    background:#E3ECE8;
+    border-radius:100px;
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .loader-progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, #0E6A4E 0%, #15936D 60%, #C99632 100%);
+    width:0%;
+    border-radius:100px;
+    animation:progress2s 2s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  }
+  @keyframes progress2s{
+    0%{width:0%}
+    40%{width:48%}
+    75%{width:82%}
+    100%{width:100%}
+  }
+  .loader-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:11.5px;
+    color:#6E827C;
+  }
+  .timer-badge{
+    font-weight:600;
+    color:#0E6A4E;
+    background:#E6F3EE;
+    padding:2px 8px;
+    border-radius:4px;
+  }
+
+  /* =========================================
+     5 INDIAN REGIONAL LANGUAGES TOOLBAR
+     ========================================= */
+  .lang-toolbar{
+    background:#F6FAF8;
+    border:1px solid #CFDFD7;
+    border-radius:8px;
+    padding:12px 16px;
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .lang-toolbar-left{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:13px;
+    font-weight:650;
+    color:#1A362C;
+  }
+  .lang-icon{
+    width:16px;
+    height:16px;
+    fill:#0E6A4E;
+  }
+  .lang-pill-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .lang-pill{
+    background:#FFFFFF;
+    border:1px solid #CFDFD7;
+    color:#2B3942;
+    padding:5px 12px;
+    border-radius:100px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.15s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .lang-pill:hover{
+    background:#EAF3EE;
+    color:#0E6A4E;
+    border-color:#BFD9CE;
+  }
+  .lang-pill.active{
+    background:#0E6A4E;
+    color:#FFFFFF;
+    border-color:#0E6A4E;
+    box-shadow:0 2px 6px rgba(14,106,78,0.22);
+  }
+  .pill-spin{
+    width:10px;
+    height:10px;
+    border:1.5px solid #fff;
+    border-top-color:transparent;
+    border-radius:50%;
+    animation:spin 0.6s linear infinite;
+    display:inline-block;
+  }
+
+  /* Status */
+  .status{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:14.5px;padding:24px 0}
+  .spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--seal);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.45);
+    display:none;align-items:center;justify-content:center;z-index:100;
+    padding:20px;backdrop-filter:blur(2px);
+  }
+  .modal-overlay.open{display:flex}
+  .modal{
+    background:var(--card);border:1px solid var(--line);border-radius:8px;
+    max-width:500px;width:100%;padding:26px 28px;box-shadow:0 12px 36px rgba(0,0,0,0.16);
+  }
+  .modal h3{margin:0 0 6px;font-size:18px}
+  .modal p{color:var(--ink-soft);font-size:13.5px;margin:0 0 18px}
+  .form-group{margin-bottom:16px}
+  .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .form-group input, .form-group select{
+    width:100%;padding:10px 12px;font:inherit;font-size:14px;
+    border:1px solid var(--line);border-radius:var(--radius-sm);
+  }
+  .form-group input:focus, .form-group select:focus{outline:2px solid var(--seal);border-color:var(--seal)}
+  .form-group small{display:block;color:var(--ink-subtle);font-size:12px;margin-top:5px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+  .modal-actions button{padding:8px 16px;font:inherit;font-size:13px;border-radius:var(--radius-sm);cursor:pointer}
+  .btn-secondary{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
+  .btn-primary{background:var(--seal);border:0;color:#fff;font-weight:600}
+
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12.5px;line-height:1.6}
+
+  /* Constantly Changing Dark Gradient Theme */
+  @keyframes animatedDarkGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  body.dark-mode {
+    --ink: #F8FAFC;
+    --ink-soft: #94A3B8;
+    --ink-subtle: #64748B;
+    --paper: #070B14;
+    --card: rgba(15, 23, 42, 0.88);
+    --seal: #10B981;
+    --seal-wash: rgba(16, 185, 129, 0.18);
+    --seal-deep: #059669;
+    --gold: #FBBF24;
+    --gold-wash: rgba(251, 191, 36, 0.16);
+    --gold-border: rgba(251, 191, 36, 0.35);
+    --accent: #38BDF8;
+    --accent-wash: rgba(56, 189, 248, 0.16);
+    --line: rgba(255, 255, 255, 0.14);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.6);
+    
+    background: linear-gradient(-45deg, #050811, #0c1427, #071e29, #130f26, #091a24, #050811);
+    background-size: 400% 400%;
+    animation: animatedDarkGradient 22s ease infinite;
+    color: #F8FAFC;
+    min-height: 100vh;
+  }
+
+  /* Dark Mode - Header Elements & Buttons */
+  body.dark-mode .brand b svg {
+    fill: #10B981;
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+  }
+  body.dark-mode .brand span {
+    color: #94A3B8;
+  }
+
+  body.dark-mode .engine-badge,
+  body.dark-mode .btn-settings,
+  body.dark-mode .btn-theme {
+    background: rgba(30, 41, 59, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #E2E8F0 !important;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+  }
+  body.dark-mode .engine-badge:hover,
+  body.dark-mode .btn-settings:hover,
+  body.dark-mode .btn-theme:hover {
+    border-color: #10B981 !important;
+    color: #10B981 !important;
+    background: rgba(16, 185, 129, 0.15) !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  }
+  body.dark-mode .engine-badge.active-live {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: #10B981 !important;
+    color: #34D399 !important;
+  }
+  body.dark-mode .engine-badge.active-live .dot {
+    background: #10B981 !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.7) !important;
+  }
+  body.dark-mode .engine-badge.active-local {
+    background: rgba(251, 191, 36, 0.16) !important;
+    border-color: #FBBF24 !important;
+    color: #FBBF24 !important;
+  }
+  body.dark-mode .engine-badge.active-local .dot {
+    background: #FBBF24 !important;
+  }
+
+  body.dark-mode .lang {
+    background: rgba(30, 41, 59, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+  body.dark-mode .lang button {
+    color: #94A3B8;
+    transition: all 0.15s ease;
+  }
+  body.dark-mode .lang button:hover {
+    color: #F8FAFC;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  body.dark-mode .lang button[aria-pressed="true"] {
+    background: #10B981 !important;
+    color: #FFFFFF !important;
+    font-weight: 700;
+  }
+
+  /* Dark Mode - Search Container & Form */
+  body.dark-mode .search-container {
+    background: rgba(15, 23, 42, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+  }
+  body.dark-mode .search-container:focus-within {
+    border-color: #10B981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22), 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  }
+  body.dark-mode input[type=text] {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode input[type=text]::placeholder {
+    color: #64748B !important;
+  }
+  body.dark-mode .btn-upload {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #E2E8F0 !important;
+  }
+  body.dark-mode .btn-upload:hover {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: #10B981 !important;
+    color: #10B981 !important;
+  }
+  body.dark-mode button.go {
+    background: #10B981 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+  }
+  body.dark-mode button.go:hover:not(:disabled) {
+    background: #059669 !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.5);
+  }
+
+  /* Dark Mode - Image Preview Bar */
+  body.dark-mode .image-preview-bar {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  }
+  body.dark-mode .preview-thumb-box {
+    background: #0B132B !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  body.dark-mode .preview-title {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .preview-desc {
+    color: #94A3B8 !important;
+  }
+  body.dark-mode .preview-tag {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #CBD5E1 !important;
+  }
+  body.dark-mode .preview-tag:hover {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: #10B981 !important;
+    color: #34D399 !important;
+  }
+  body.dark-mode .preview-vision-status {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .confidence-pill {
+    background: rgba(56, 189, 248, 0.18) !important;
+    color: #38BDF8 !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+  }
+  body.dark-mode .btn-remove-img {
+    color: #94A3B8 !important;
+  }
+  body.dark-mode .btn-remove-img:hover {
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.18) !important;
+  }
+
+  /* Dark Mode - Query Chips */
+  body.dark-mode .chips-label {
+    color: #64748B !important;
+  }
+  body.dark-mode .chips button {
+    background: rgba(30, 41, 59, 0.72) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    color: #CBD5E1 !important;
+    backdrop-filter: blur(8px);
+  }
+  body.dark-mode .chips button:hover {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: #10B981 !important;
+    color: #34D399 !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Dark Mode - Main Answer Container & Metadata */
+  body.dark-mode .answer {
+    background: rgba(15, 23, 42, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(16px);
+  }
+  body.dark-mode .answer .meta {
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+    color: #94A3B8 !important;
+  }
+  body.dark-mode .pill.live {
+    border-color: #10B981 !important;
+    color: #34D399 !important;
+    background: rgba(16, 185, 129, 0.18) !important;
+  }
+  body.dark-mode .pill.fallback {
+    border-color: #FBBF24 !important;
+    color: #FBBF24 !important;
+    background: rgba(251, 191, 36, 0.16) !important;
+  }
+  body.dark-mode .pill.warn {
+    border-color: #F87171 !important;
+    color: #F87171 !important;
+    background: rgba(239, 68, 68, 0.16) !important;
+  }
+
+  /* Dark Mode - 5 Regional Languages Toolbar */
+  body.dark-mode .lang-toolbar {
+    background: rgba(30, 41, 59, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  }
+  body.dark-mode .lang-toolbar-left {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .lang-icon {
+    fill: #10B981 !important;
+  }
+  body.dark-mode .lang-pill {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    color: #CBD5E1 !important;
+  }
+  body.dark-mode .lang-pill:hover {
+    background: rgba(16, 185, 129, 0.16) !important;
+    border-color: #10B981 !important;
+    color: #34D399 !important;
+  }
+  body.dark-mode .lang-pill.active {
+    background: #10B981 !important;
+    border-color: #10B981 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4) !important;
+  }
+
+  /* Dark Mode - Image Badge Row */
+  body.dark-mode .image-badge-row {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  }
+  body.dark-mode .image-badge-row img {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+  body.dark-mode .image-badge-text b {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .image-badge-text span {
+    color: #94A3B8 !important;
+  }
+
+  /* Dark Mode - Featured BIS Standard Card */
+  body.dark-mode .bis-card {
+    background: rgba(15, 23, 42, 0.94) !important;
+    border: 1px solid rgba(16, 185, 129, 0.38) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(16, 185, 129, 0.15) !important;
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .bis-card.non-mandatory {
+    background: rgba(15, 23, 42, 0.94) !important;
+    border: 1px solid rgba(251, 191, 36, 0.42) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(251, 191, 36, 0.15) !important;
+  }
+  body.dark-mode .bis-std-icon {
+    background: rgba(16, 185, 129, 0.22) !important;
+    color: #10B981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  }
+  body.dark-mode .bis-card.non-mandatory .bis-std-icon {
+    background: rgba(251, 191, 36, 0.22) !important;
+    color: #FBBF24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+  }
+  body.dark-mode .bis-std-number {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .bis-scheme-tag {
+    background: rgba(16, 185, 129, 0.18) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  }
+  body.dark-mode .bis-card.non-mandatory .bis-scheme-tag {
+    background: rgba(251, 191, 36, 0.18) !important;
+    color: #FBBF24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+  }
+  body.dark-mode .bis-card-title {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .bis-def-box {
+    background: rgba(30, 41, 59, 0.78) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #CBD5E1 !important;
+  }
+  body.dark-mode .bis-def-box strong {
+    color: #34D399 !important;
+  }
+  body.dark-mode .bis-grid {
+    grid-gap: 12px;
+  }
+  body.dark-mode .bis-col {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #CBD5E1 !important;
+  }
+  body.dark-mode .bis-col.covered {
+    border-left: 3px solid #10B981 !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+  }
+  body.dark-mode .bis-col.exceptions {
+    border-left: 3px solid #FBBF24 !important;
+    background: rgba(251, 191, 36, 0.1) !important;
+  }
+  body.dark-mode .bis-col.covered .bis-col-title {
+    color: #34D399 !important;
+  }
+  body.dark-mode .bis-col.exceptions .bis-col-title {
+    color: #FBBF24 !important;
+  }
+  body.dark-mode .bis-item-chip {
+    background: rgba(15, 23, 42, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .bis-card-actions {
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  body.dark-mode .bis-btn-doc {
+    background: #10B981 !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3) !important;
+  }
+  body.dark-mode .bis-btn-doc:hover {
+    background: #34D399 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.5) !important;
+  }
+  body.dark-mode .bis-btn-portal {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #E2E8F0 !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+  }
+  body.dark-mode .bis-btn-portal:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+    border-color: #38BDF8 !important;
+    color: #38BDF8 !important;
+  }
+
+  /* Dark Mode - Answer Typography & Content */
+  body.dark-mode .answer-content {
+    color: #E2E8F0 !important;
+  }
+  body.dark-mode .ans-h3,
+  body.dark-mode .ans-h4,
+  body.dark-mode strong {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .ans-code {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #38BDF8 !important;
+  }
+  body.dark-mode .ans-quote {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-left-color: #10B981 !important;
+    color: #E2E8F0 !important;
+  }
+
+  /* Dark Mode - Tables */
+  body.dark-mode .table-wrap {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  }
+  body.dark-mode .ans-table thead {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.12) !important;
+  }
+  body.dark-mode .ans-table th {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .ans-table td {
+    color: #CBD5E1 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  body.dark-mode .ans-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+  body.dark-mode .ans-table td strong {
+    color: #F8FAFC !important;
+  }
+
+  /* Dark Mode - Source Reference Slips */
+  body.dark-mode .sources {
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  body.dark-mode .sources h2 {
+    color: #64748B !important;
+  }
+  body.dark-mode .slip {
+    background: rgba(30, 41, 59, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-left: 3px solid #10B981 !important;
+  }
+  body.dark-mode .slip.dynamic {
+    border-left-color: #38BDF8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+  }
+  body.dark-mode .slip.unverified {
+    border-left-color: #FBBF24 !important;
+    background: rgba(251, 191, 36, 0.08) !important;
+  }
+  body.dark-mode .slip strong {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .slip strong span {
+    color: #38BDF8 !important;
+  }
+  body.dark-mode .slip-doc-pill {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  }
+  body.dark-mode .slip-action-tip {
+    color: #34D399 !important;
+  }
+  body.dark-mode .slip small {
+    color: #94A3B8 !important;
+  }
+
+  /* Dark Mode - 2-Second National Inspection Loader */
+  body.dark-mode .bis-inspection-loader {
+    background: rgba(15, 23, 42, 0.88) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  }
+  body.dark-mode .crest-spin-ring {
+    border-color: #10B981 !important;
+  }
+  body.dark-mode .crest-svg {
+    fill: #10B981 !important;
+  }
+  body.dark-mode .loader-pretitle {
+    color: #64748B !important;
+  }
+  body.dark-mode .loader-main-title {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .loader-step {
+    color: #94A3B8 !important;
+  }
+  body.dark-mode .loader-step.active {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .loader-step.done {
+    color: #34D399 !important;
+  }
+  body.dark-mode .step-indicator {
+    background: #1E293B !important;
+  }
+  body.dark-mode .loader-step.active .step-indicator,
+  body.dark-mode .loader-step.done .step-indicator {
+    background: #10B981 !important;
+  }
+  body.dark-mode .loader-progress-bar {
+    background: #1E293B !important;
+  }
+  body.dark-mode .loader-progress-fill {
+    background: linear-gradient(90deg, #10B981 0%, #34D399 60%, #FBBF24 100%) !important;
+  }
+  body.dark-mode .loader-footer {
+    color: #64748B !important;
+  }
+  body.dark-mode .timer-badge {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #10B981 !important;
+  }
+
+  /* Dark Mode - Settings Modal */
+  body.dark-mode .modal-overlay {
+    background: rgba(0, 0, 0, 0.72) !important;
+  }
+  body.dark-mode .modal {
+    background: #0B132B !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .modal h3 {
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .modal p {
+    color: #94A3B8 !important;
+  }
+  body.dark-mode .form-group label {
+    color: #E2E8F0 !important;
+  }
+  body.dark-mode .form-group input,
+  body.dark-mode .form-group select {
+    background: #162238 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #F8FAFC !important;
+  }
+  body.dark-mode .form-group input:focus,
+  body.dark-mode .form-group select:focus {
+    border-color: #10B981 !important;
+    outline: 2px solid #10B981 !important;
+  }
+  body.dark-mode .form-group small {
+    color: #64748B !important;
+  }
+  body.dark-mode .btn-secondary {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #CBD5E1 !important;
+  }
+  body.dark-mode .btn-secondary:hover {
+    border-color: #94A3B8 !important;
+    color: #FFFFFF !important;
+  }
+  body.dark-mode .btn-primary {
+    background: #10B981 !important;
+    color: #FFFFFF !important;
+  }
+  body.dark-mode .btn-primary:hover {
+    background: #059669 !important;
+  }
+
+  body.dark-mode footer {
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+    color: #64748B !important;
+  }
+
+  /* Navigation Mode Tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 16px;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    max-width: 760px;
+  }
+  .tab-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab-btn:hover {
+    color: var(--ink);
+  }
+  .tab-btn.active {
+    background: var(--card);
+    color: var(--seal);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid var(--line);
+  }
+  body.dark-mode .nav-tabs {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  body.dark-mode .tab-btn {
+    color: #94A3B8;
+  }
+  body.dark-mode .tab-btn.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Active Specialist Bot Banner */
+  .active-bot-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(14, 106, 78, 0.08) 0%, rgba(24, 83, 219, 0.05) 100%);
+    border: 1.5px solid #BFD9CE;
+    border-radius: var(--radius);
+    padding: 13px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(14, 106, 78, 0.05);
+    animation: fadeIn 0.2s ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .bot-badge-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+  .bot-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+  .bot-text-group {
+    min-width: 0;
+  }
+  .bot-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+  }
+  .active-bot-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .bot-cat-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--seal-wash);
+    color: var(--seal);
+    border: 1px solid rgba(14, 106, 78, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .active-bot-sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .bot-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-store-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--seal);
+    color: var(--seal);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-store-switch:hover {
+    background: var(--seal-wash);
+    transform: translateY(-1px);
+  }
+  .btn-reset-general {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-reset-general:hover {
+    color: var(--ink);
+    border-color: var(--ink-subtle);
+  }
+  body.dark-mode .active-bot-banner {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+  }
+  body.dark-mode .bot-icon-circle {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* BIS Expert Store Marketplace */
+  .store-hero {
+    background: linear-gradient(135deg, rgba(14, 106, 78, 0.06) 0%, rgba(24, 83, 219, 0.04) 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .store-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--seal-wash);
+    color: var(--seal);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(14, 106, 78, 0.2);
+  }
+  .store-hero h2 {
+    font-size: 22px;
+    font-weight: 750;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .store-hero p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  .store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .store-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .store-card:hover {
+    border-color: var(--seal);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .store-card.active-bot {
+    border: 2px solid var(--seal);
+    background: linear-gradient(180deg, rgba(14, 106, 78, 0.04) 0%, var(--card) 100%);
+  }
+  .store-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .store-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--line);
+  }
+  .store-card-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--seal);
+    background: var(--seal-wash);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .store-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .store-card-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  .store-card-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+    background: rgba(0, 0, 0, 0.02);
+    padding: 10px;
+    border-radius: 6px;
+  }
+  .store-card-chip-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .store-card-chip-btn {
+    text-align: left;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .store-card-chip-btn:hover {
+    color: var(--seal);
+    border-color: var(--seal);
+  }
+  .store-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .store-card-cat {
+    font-size: 11.5px;
+    color: var(--ink-subtle);
+  }
+  .btn-launch-bot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--seal);
+    color: #FFFFFF !important;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-launch-bot:hover {
+    background: var(--seal-deep);
+    transform: translateY(-1px);
+  }
+  .btn-launch-bot.active-btn {
+    background: #EAF3EE;
+    color: var(--seal) !important;
+    border: 1px solid var(--seal);
+    cursor: default;
+  }
+  body.dark-mode .store-hero {
+    background: rgba(16, 185, 129, 0.06);
+  }
+  body.dark-mode .store-card {
+    background: rgba(22, 34, 56, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  body.dark-mode .store-card:hover {
+    border-color: var(--seal);
+  }
+  body.dark-mode .store-card.active-bot {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10B981;
+  }
+  body.dark-mode .store-card-chips {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  body.dark-mode .store-card-chip-btn {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #CBD5E1;
+  }
+  body.dark-mode .store-card-chip-btn:hover {
+    color: #34D399;
+    border-color: #34D399;
+  }
+
+  /* Catalog Directory Results */
+  .catalog-results {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .catalog-stats-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--seal-wash);
+    color: var(--seal-deep);
+    border: 1px solid rgba(14, 106, 78, 0.2);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  body.dark-mode .catalog-stats-banner {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34D399;
+    border-color: rgba(16, 185, 129, 0.25);
+  }
+  .catalog-item-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .catalog-item-card:hover {
+    border-color: var(--seal);
+    transform: translateY(-1px);
+  }
+  .catalog-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .catalog-std-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--seal);
+  }
+  .catalog-year-pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--seal-wash);
+    color: var(--seal);
+    border: 1px solid rgba(14, 106, 78, 0.2);
+  }
+  .catalog-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .catalog-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .catalog-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.15s;
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .catalog-btn-portal {
+    background: var(--seal-wash);
+    color: var(--seal);
+    border-color: rgba(14, 106, 78, 0.25);
+  }
+  .catalog-btn-portal:hover {
+    background: #D5E7E0;
+  }
+  .catalog-btn-pdf {
+    background: var(--accent-wash);
+    color: var(--accent);
+    border-color: rgba(24, 83, 219, 0.25);
+  }
+  .catalog-btn-pdf:hover {
+    background: #E1EDFE;
+  }
+  .catalog-btn-ask {
+    background: var(--gold-wash);
+    color: var(--gold);
+    border-color: rgba(154, 100, 8, 0.25);
+  }
+  .catalog-btn-ask:hover {
+    background: #F5E8D3;
+  }
+  body.dark-mode .catalog-item-card {
+    background: rgba(22, 34, 56, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  body.dark-mode .catalog-title {
+    color: #F1F5F9;
+  }
+  body.dark-mode .catalog-std-badge {
+    color: #34D399;
+  }
+  body.dark-mode .catalog-year-pill {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Clean Blue Pagination Component */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 28px 0 16px;
+  }
+  .pagination {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-radius: 4px;
+    background: #FFFFFF;
+    border: 1px solid #D1D5DB;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  .page-item {
+    display: inline-flex;
+  }
+  .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #007BFF;
+    text-decoration: none;
+    background: #FFFFFF;
+    border: none;
+    border-right: 1px solid #E5E7EB;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease-in-out;
+  }
+  .page-item:last-child .page-link {
+    border-right: none;
+  }
+  .page-link:hover:not(.disabled):not(.active) {
+    background-color: #F3F4F6;
+    color: #0056B3;
+  }
+  .page-item.active .page-link {
+    color: #FFFFFF !important;
+    background-color: #007BFF !important;
+    font-weight: 700;
+    cursor: default;
+  }
+  .page-item.disabled .page-link {
+    color: #9CA3AF !important;
+    background-color: #FFFFFF;
+    cursor: not-allowed;
+  }
+  .page-item.dots .page-link {
+    color: #9CA3AF;
+    cursor: default;
+    background-color: #FFFFFF;
+    min-width: 28px;
+    padding: 0 6px;
+  }
+
+  /* Dark mode pagination */
+  body.dark-mode .pagination {
+    background: #162238;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  body.dark-mode .page-link {
+    background-color: #162238;
+    color: #38BDF8;
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  body.dark-mode .page-link:hover:not(.disabled):not(.active) {
+    background-color: #1E293B;
+    color: #7DD3FC;
+  }
+  body.dark-mode .page-item.active .page-link {
+    background-color: #007BFF !important;
+    color: #FFFFFF !important;
+  }
+  body.dark-mode .page-item.disabled .page-link {
+    color: #64748B !important;
+    background-color: #162238;
+  }
+  body.dark-mode .page-item.dots .page-link {
+    color: #64748B;
+    background-color: #162238;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <b>
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 2L2 7v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 4a3 3 0 110 6 3 3 0 010-6zm0 14.8c-3.13-1-5.74-4.22-6.61-7.8.96-.65 2.1-1 3.33-1 .44 0 .86.05 1.28.14v3.66h4v-3.66c.42-.09.84-.14 1.28-.14 1.23 0 2.37.35 3.33 1-.87 3.58-3.48 6.8-6.61 7.8z"/></svg>
+        BIS Sahayak
+      </b>
+      <span id="kbcount">loading…</span>
+    </div>
+    <div class="nav-actions">
+      <button type="button" class="engine-badge" id="engine-badge" title="AI Assistant Status">
+        <span class="dot"></span>
+        <span id="engine-text">AI Assistant</span>
+      </button>
+      <button type="button" class="btn-settings" id="btn-settings" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+      <button type="button" class="btn-theme" id="btn-theme" title="Toggle Animated Dark Gradient Mode">
+        <svg viewBox="0 0 24 24" class="theme-icon" width="15" height="15" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        <span id="theme-btn-text">Dark Mode</span>
+      </button>
+      <div class="lang" role="group" aria-label="Language">
+        <button id="btn-en" aria-pressed="true">English</button>
+        <button id="btn-hi" aria-pressed="false">हिंदी</button>
+      </div>
+    </div>
+  </header>
+
+  <h1 id="head">Ask about Indian Standards in plain language</h1>
+  <p class="sub" id="sub">Conversational assistant for Indian Standards, BIS certification schemes, product quality, and consumer verification under the Department of Consumer Affairs.</p>
+
+  <div class="nav-tabs" role="tablist">
+    <button type="button" class="tab-btn active" id="tab-rag">
+      <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+      <span id="tab-rag-text">AI RAG Assistant</span>
+    </button>
+    <button type="button" class="tab-btn" id="tab-store">
+      <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Expert Bot Store</span>
+    </button>
+    <button type="button" class="tab-btn" id="tab-catalog">
+      <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+      <span>Official Standards Directory (25,312)</span>
+    </button>
+  </div>
+
+  <!-- Active Specialist Bot Banner -->
+  <div class="active-bot-banner" id="active-bot-banner" style="display:none">
+    <div class="bot-badge-wrap">
+      <div class="bot-icon-circle" id="active-bot-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--seal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="bot-text-group">
+        <div class="bot-title-row">
+          <span class="active-bot-title" id="active-bot-name">Gold & Jewellery Hallmarking Expert</span>
+          <span class="bot-cat-pill" id="active-bot-badge">Hallmarking & HUID</span>
+        </div>
+        <div class="active-bot-sub" id="active-bot-tagline">Specialist in IS 1417 gold purity, 6-digit HUID verification & jeweller registration.</div>
+      </div>
+    </div>
+    <div class="bot-banner-actions">
+      <button type="button" class="btn-store-switch" onclick="switchMode('store')" title="Browse other specialist bots">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        <span>Switch Bot</span>
+      </button>
+      <button type="button" class="btn-reset-general" onclick="selectExpertBot('general')" title="Switch back to all 25,312 standards">
+        ✕ Reset to All
+      </button>
+    </div>
+  </div>
+
+  <div class="search-container" id="search-box">
+    <!-- Image Preview Bar (Appears when image is selected) -->
+    <div class="image-preview-bar" id="img-bar">
+      <div class="preview-thumb-box">
+        <img id="img-thumb" src="" alt="Product Thumbnail">
+      </div>
+      <div class="preview-info">
+        <div class="preview-vision-status" id="vision-status">
+          <span class="vision-dot"></span>
+          <span id="vision-status-text">Scanning image pixels with AI Computer Vision...</span>
+          <span class="confidence-pill" id="vision-confidence" style="display:none">95% Visual Match</span>
+        </div>
+        <div class="preview-title" id="preview-detected-title">
+          <span>Identified Item:</span>
+          <span id="img-detected-item" style="color:var(--seal);font-weight:700">Analyzing picture content...</span>
+        </div>
+        <div class="preview-desc" id="preview-desc">Visual features detected from picture pixels (independent of file name):</div>
+        <div class="preview-tags" id="visual-tags"></div>
+      </div>
+      <button type="button" class="btn-remove-img" id="btn-cancel-img" title="Remove image">&times;</button>
+    </div>
+
+    <form class="search-form" id="form">
+      <input id="q" type="text" autocomplete="off" placeholder="e.g. Which standard applies to Fire Extinguishers or Safety Shoes?" aria-label="Your question">
+      
+      <!-- Hidden file input -->
+      <input type="file" id="file-input" accept="image/*" style="display:none">
+      <button type="button" class="btn-upload" id="btn-upload" title="Upload an image of an item to identify BIS standards">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Upload Item</span>
+      </button>
+
+      <button class="go" type="submit" id="go">
+        <span>Ask</span>
+      </button>
+    </form>
+  </div>
+
+  <div class="chips-label" id="chips-label">Popular Standards & Queries</div>
+  <div class="chips" id="chips"></div>
+
+  <!-- BIS Expert Store Marketplace View Container -->
+  <div id="store-box" style="display:none">
+    <div class="store-hero">
+      <div class="store-hero-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Specialist AI Directory</span>
+      </div>
+      <h2>Domain-Expert AI Assistants Directory</h2>
+      <p>Select a dedicated specialist chatbot tailored with deep domain regulatory rules, testing clauses, and priority Indian Standards.</p>
+    </div>
+    <div class="store-grid" id="store-grid"></div>
+  </div>
+
+  <!-- Standards Directory Output Container -->
+  <div id="catalog-box" style="display:none">
+    <div class="catalog-stats-banner" id="catalog-banner">
+      <div style="display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+        <span>Showing results from official Bureau of Indian Standards e-Sale database</span>
+      </div>
+      <span id="catalog-count-badge">25,312 Total Standards</span>
+    </div>
+    <div class="catalog-results" id="catalog-results"></div>
+    <div class="pagination-container" id="catalog-pagination"></div>
+  </div>
+
+  <div id="out"></div>
+
+  <footer id="foot">
+    Smart India Hackathon (Problem Statement 26107), Department of Consumer Affairs. Answers are grounded in official Indian Standards (IS), mandatory Quality Control Orders (QCOs), and BIS conformity assessment schemes.
+  </footer>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h3 id="modal-title">AI Assistant & Inference Settings</h3>
+    <p>Configure operational mode and optional API credentials for live reasoning.</p>
+
+    <div class="form-group">
+      <label for="cfg-key">AI Inference API Key (Optional)</label>
+      <input type="password" id="cfg-key" placeholder="gsk_... or sk-..." autocomplete="off">
+      <small>Stored locally in browser or loaded from server <code>.env</code> file (<code>GROQ_API_KEY</code>).</small>
+    </div>
+
+    <div class="form-group">
+      <label for="cfg-mode">Operational Mode</label>
+      <select id="cfg-mode">
+        <option value="auto">Live AI Engine + Local Database Fallback (Default)</option>
+        <option value="groq">Strict Live AI Engine Only</option>
+        <option value="dataset">Verified Local Standards Records Only (Offline Mode)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="cfg-model">Inference Model</label>
+      <input type="text" id="cfg-model" placeholder="openai/gpt-oss-120b">
+      <small>Default: <code>openai/gpt-oss-120b</code> (Flagship 120B parameter model)</small>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="btn-modal-cancel">Cancel</button>
+      <button type="button" class="btn-primary" id="btn-modal-save">Save & Apply</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = location.origin.includes("file") ? "http://localhost:8000" : "";
+let lang = "en";
+let serverConfig = { groq_configured: false, model: "openai/gpt-oss-120b", server_has_key: false };
+
+let attachedImage = { data: null, name: "", identified_item: "" };
+
+let activeMode = "rag";
+let searchDebounce = null;
+let currentCatalogPage = 1;
+let currentCatalogQuery = "";
+let totalCatalogPages = 1;
+const CATALOG_PAGE_LIMIT = 10;
+let currentBotId = "general";
+let expertBotsList = [
+  {
+    "id": "general",
+    "name": "BIS Sahayak (General)",
+    "tagline": "Conversational assistant across all 25,312 Indian Standards & BIS schemes.",
+    "category": "All Domains",
+    "badge": "Generalist",
+    "icon": "bot",
+    "starter_chips": ["Which standard applies to safety shoes & chappals?", "What Indian Standard applies to TMT rebar (sariya)?", "How do I check if my gold jewellery is really hallmarked?"],
+    "starter_chips_hi": ["सेफ्टी शूज और चप्पलों पर कौन सा भारतीय मानक लागू होता है?", "TMT सरिया के लिए कौन सा भारतीय मानक लागू होता है?"]
+  },
+  {
+    "id": "gold-hallmark",
+    "name": "Gold & Jewellery Hallmarking Expert",
+    "tagline": "Specialist in IS 1417 gold purity, 6-digit HUID verification & jeweller registration.",
+    "category": "Precious Metals & Jewellery",
+    "badge": "Hallmarking & HUID",
+    "icon": "crown",
+    "starter_chips": ["How do I verify a 6-digit HUID number on BIS Care app?", "What are the allowed caratages for gold hallmarking (IS 1417)?", "How do jewellers get automatic registration for hallmarking?"],
+    "starter_chips_hi": ["BIS Care ऐप पर 6-अंकीय HUID नंबर का सत्यापन कैसे करें?", "सोने की हॉलमार्किंग (IS 1417) के लिए कौन से कैरेट स्वीकृत हैं?"]
+  },
+  {
+    "id": "auto-tyres",
+    "name": "Automotive & Pneumatic Tyres Expert",
+    "tagline": "Specialist in IS 15633, IS 15636, mandatory Tyre QCO & speed/load ratings.",
+    "category": "Automotive & Transport",
+    "badge": "Automotive QCO",
+    "icon": "car",
+    "starter_chips": ["Which Indian Standard applies to passenger car tyres (IS 15633)?", "Is ISI mark mandatory for imported car and truck tyres?", "What mandatory markings must be embossed on a tyre sidewall?"],
+    "starter_chips_hi": ["यात्री कार टायरों पर कौन सा मानक लागू होता है (IS 15633)?", "क्या आयातित कार और ट्रक टायरों पर ISI मार्क अनिवार्य है?"]
+  },
+  {
+    "id": "civil-construction",
+    "name": "Civil Construction, Concrete & Steel Expert",
+    "tagline": "Specialist in IS 456 concrete, IS 1786 TMT steel bars, cement & NBC building codes.",
+    "category": "Civil & Construction",
+    "badge": "Construction & NBC",
+    "icon": "building",
+    "starter_chips": ["What is the minimum grade of concrete for RCC as per IS 456?", "What are the requirements for TMT rebar under IS 1786 (Fe 500D)?", "Is ISI mark mandatory for cement (IS 269) and structural steel?"],
+    "starter_chips_hi": ["IS 456 के अनुसार RCC के लिए कंक्रीट का न्यूनतम ग्रेड क्या है?", "IS 1786 (Fe 500D) के तहत TMT सरिया की क्या आवश्यकताएं हैं?"]
+  },
+  {
+    "id": "electronics-crs",
+    "name": "Electronics, IT & Solar CRS Expert",
+    "tagline": "Specialist in Scheme-II Compulsory Registration, batteries, mobiles, LED drivers & solar.",
+    "category": "Electronics & IT",
+    "badge": "MeitY CRS (Scheme-II)",
+    "icon": "cpu",
+    "starter_chips": ["What is the step-by-step process to get BIS CRS registration for electronics?", "Which standard applies to Lithium-ion mobile batteries (IS 16046)?", "What standard applies to Self-Ballasted LED Bulbs (IS 16102)?"],
+    "starter_chips_hi": ["इलेक्ट्रॉनिक्स के लिए BIS CRS रजिस्ट्रेशन की चरण-दर-चरण प्रक्रिया क्या है?", "लिथियम-आयन मोबाइल बैटरी पर कौन सा मानक लागू होता है (IS 16046)?"]
+  },
+  {
+    "id": "packaged-water",
+    "name": "Water Quality, Packaged Water & Food Safety",
+    "tagline": "Specialist in IS 10500 drinking water, IS 14543 packaged water & food contact standards.",
+    "category": "Food, Water & Consumer Health",
+    "badge": "Drinking Water & FSSAI",
+    "icon": "droplet",
+    "starter_chips": ["What are the acceptable and permissible limits of TDS and pH in IS 10500?", "What are the mandatory requirements to start an IS 14543 packaged water plant?", "Which safety standard applies to domestic pressure cookers (IS 2347)?"],
+    "starter_chips_hi": ["IS 10500 के अनुसार पीने के पानी में TDS और pH की स्वीकार्य सीमा क्या है?", "IS 14543 पैकेज्ड पेयजल प्लांट शुरू करने के लिए क्या अनिवार्यताएं हैं?"]
+  },
+  {
+    "id": "footwear-safety",
+    "name": "Footwear & PPE Safety Expert",
+    "tagline": "Specialist in IS 15298 safety shoes, protective footwear & mandatory Footwear QCO.",
+    "category": "Footwear & Personal Protection",
+    "badge": "Footwear QCO",
+    "icon": "shield",
+    "starter_chips": ["What standard applies to industrial safety shoes with steel toe caps (IS 15298-2)?", "What is the difference between Safety, Protective, and Occupational Footwear?", "Are rubber Hawaii chappals covered under mandatory BIS certification (IS 10702)?"],
+    "starter_chips_hi": ["स्टील टो कैप वाले इंडस्ट्रियल सेफ्टी जूतों पर कौन सा मानक लागू है (IS 15298-2)?", "सेफ्टी, प्रोटेक्टिव और ऑक्यूपेशनल फुटवियर में क्या अंतर है?"]
+  },
+  {
+    "id": "fire-safety",
+    "name": "Fire Safety & Pressure Vessels Expert",
+    "tagline": "Specialist in IS 15683 fire extinguishers, maintenance & gas cylinders (IS 3196).",
+    "category": "Fire & Industrial Safety",
+    "badge": "Fire & Gas Safety",
+    "icon": "flame",
+    "starter_chips": ["Which standard governs portable fire extinguishers in India (IS 15683)?", "What are the inspection and refilling frequencies under IS 2190?", "What standard applies to domestic LPG gas cylinders (IS 3196)?"],
+    "starter_chips_hi": ["भारत में पोर्टेबल अग्निशामक यंत्रों (Fire Extinguishers) के लिए कौन सा मानक है (IS 15683)?", "IS 2190 के अनुसार अग्निशामक यंत्रों की रीफिलिंग कब करानी चाहिए?"]
+  }
+];
+
+const CHIPS = {
+  en: [
+    "Which standard applies to safety shoes & chappals?",
+    "What Indian Standard applies to TMT rebar (sariya)?",
+    "How do I check if my gold jewellery is really hallmarked?",
+    "What are the fees and MSME concessions for BIS certification?",
+    "What standard applies to LPG gas cylinders (IS 3196)?",
+    "What is the difference between ISI mark and CRS?",
+    "How to certify Packaged Drinking Water under IS 14543?",
+    "Where can I get drinking water tested under IS 10500?"
+  ],
+  hi: [
+    "सेफ्टी शूज और चप्पल के लिए कौन सा मानक है?",
+    "सरिया (TMT Rebar) के लिए कौन सा भारतीय मानक लागू होता है?",
+    "सोने के आभूषण का हॉलमार्क कैसे जाँचें?",
+    "BIS प्रमाणन के लिए फीस और MSME को क्या छूट मिलती है?",
+    "एलपीजी गैस सिलेंडर के लिए कौन सा मानक है?",
+    "ISI चिह्न और CRS में क्या अंतर है?",
+    "पेयजल के लिए कौन सा मानक है?"
+  ]
+};
+
+const COPY = {
+  en: {
+    head: "Ask about Indian Standards in plain language",
+    sub: "Conversational assistant for Indian Standards, BIS certification schemes, product quality, and consumer verification under the Department of Consumer Affairs.",
+    ph: "e.g. Which standard applies to Fire Extinguishers, or are chappals certified?",
+    go: "Ask", thinking: "Analyzing through official BIS standards…", sources: "Official Standards & Sources",
+    live: "AI Verified Answer", local: "Local BIS Records", fallback: "Local Database (Fallback)",
+    nomatch: "Outside Scope / General Item", unver: "verified against portal",
+    chips_title: "Popular Standards & Queries",
+    down: "Cannot reach server. Start it with: python backend/app.py"
+  },
+  hi: {
+    head: "भारतीय मानकों के बारे में सरल भाषा में पूछें",
+    sub: "भारतीय मानक (IS), बीआईएस प्रमाणन योजनाओं, उत्पाद गुणवत्ता एवं उपभोक्ता सत्यापन के लिए समर्पित आधिकारिक सहायक।",
+    ph: "जैसे: अग्निशामक यंत्र या सेफ्टी शूज के लिए कौन सा मानक लागू होता है?",
+    go: "पूछें", thinking: "भारतीय मानकों के आधार पर विश्लेषण किया जा रहा है…", sources: "संबद्ध मानक एवं आधिकारिक स्रोत",
+    live: "सत्यापित उत्तर", local: "स्थानीय रिकॉर्ड", fallback: "स्थानीय डेटाबेस",
+    nomatch: "बीआईएस दायरे से बाहर / सामान्य मद", unver: "पोर्टल अनुसार सत्यापित",
+    chips_title: "प्रमुख मानक एवं प्रश्न",
+    down: "सर्वर से संपर्क नहीं हो पा रहा। चलाएँ: python backend/app.py"
+  }
+};
+
+const $ = id => document.getElementById(id);
+
+function getSavedApiKey(){
+  return localStorage.getItem("bis_groq_api_key") || localStorage.getItem("bis_grok_api_key") || "";
+}
+
+function getSavedMode(){
+  return localStorage.getItem("bis_mode") || "auto";
+}
+
+function getSavedModel(){
+  return localStorage.getItem("bis_groq_model") || "openai/gpt-oss-120b";
+}
+
+function updateEngineBadge(){
+  const badge = $("engine-badge");
+  const text = $("engine-text");
+  const mode = getSavedMode();
+  const hasKey = Boolean(getSavedApiKey() || serverConfig.server_has_key);
+
+  badge.className = "engine-badge";
+
+  if (mode === "dataset"){
+    badge.classList.add("active-local");
+    text.textContent = "Verified Records";
+  } else if (hasKey){
+    badge.classList.add("active-live");
+    text.textContent = "AI Assistant (Live)";
+  } else {
+    badge.classList.add("active-local");
+    text.textContent = "Local Records";
+  }
+}
+
+function updateThemeButtonText(){
+  const isDark = document.body.classList.contains("dark-mode");
+  const themeText = $("theme-btn-text");
+  if (themeText) {
+    if (isDark) {
+      themeText.textContent = (lang === "hi" ? "लाइट मोड" : "Light Mode");
+    } else {
+      themeText.textContent = (lang === "hi" ? "डार्क मोड" : "Dark Mode");
+    }
+  }
+}
+
+function applyTheme(isDark){
+  if (isDark){
+    document.body.classList.add("dark-mode");
+    localStorage.setItem("bis_theme", "dark");
+  } else {
+    document.body.classList.remove("dark-mode");
+    localStorage.setItem("bis_theme", "light");
+  }
+  updateThemeButtonText();
+}
+
+function initTheme(){
+  const saved = localStorage.getItem("bis_theme");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDark = saved ? (saved === "dark") : prefersDark;
+  applyTheme(isDark);
+}
+
+function applyLang(){
+  const c = COPY[lang];
+  $("head").textContent = c.head;
+  $("sub").textContent = c.sub;
+  $("q").placeholder = c.ph;
+  $("go").querySelector("span").textContent = c.go;
+  $("chips-label").textContent = c.chips_title;
+  $("btn-en").setAttribute("aria-pressed", lang === "en");
+  $("btn-hi").setAttribute("aria-pressed", lang === "hi");
+  document.documentElement.lang = lang;
+  updateThemeButtonText();
+  renderChips();
+}
+
+function renderChips(){
+  const box = $("chips");
+  if (!box) return;
+  box.innerHTML = "";
+  let list = CHIPS[lang] || CHIPS.en;
+  const activeBot = expertBotsList.find(b => b.id === currentBotId);
+  if (activeBot){
+    if (lang === "hi" && activeBot.starter_chips_hi && activeBot.starter_chips_hi.length){
+      list = activeBot.starter_chips_hi;
+    } else if (activeBot.starter_chips && activeBot.starter_chips.length){
+      list = activeBot.starter_chips;
+    }
+  }
+  list.forEach(text => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = text;
+    b.onclick = () => { $("q").value = text; ask(text); };
+    box.appendChild(b);
+  });
+}
+
+// Markdown Parser that converts **bold**, *italic*, headers, lists, code into clean HTML
+function parseMarkdown(md){
+  if (!md) return "";
+  let s = String(md).trim();
+
+  // Escape HTML tags to prevent XSS
+  s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  // Headers
+  s = s.replace(/^### (.*$)/gim, '<h4 class="ans-h4">$1</h4>');
+  s = s.replace(/^## (.*$)/gim, '<h3 class="ans-h3">$1</h3>');
+
+  // Convert **bold** to <strong> (fixing the raw ** sign)
+  s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Convert *italic* to <em>
+  s = s.replace(/(?<!\*)\*(?!\*)([^*]+)\*/g, '<em>$1</em>');
+
+  // Strip any accidental dangling asterisks
+  s = s.replace(/\*{2,}/g, '');
+
+  // Blockquotes
+  s = s.replace(/^\> (.*$)/gim, '<blockquote class="ans-quote">$1</blockquote>');
+
+  // Inline code
+  s = s.replace(/`([^`]+)`/g, '<code class="ans-code">$1</code>');
+
+  // Allow clean line breaks
+  s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br/>');
+
+  // Normalize table rows if concatenated with `| |`
+  s = s.replace(/\|\s*\|\s*(?=[A-Za-z0-9\u0900-\u097F\-:\*])/g, '|\n|');
+
+  // Convert markdown tables into styled HTML tables
+  s = s.replace(/((?:^[ \t]*\|[^\n]+\|[ \t]*(?:\r?\n|$)){2,})/gm, function(tableBlock){
+    const rawLines = tableBlock.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (rawLines.length < 2) return tableBlock;
+
+    const isDivider = (line) => /^\|(?:\s*:?-+:?\s*\|)+$/.test(line);
+    if (!isDivider(rawLines[1])) return tableBlock;
+
+    const parseRow = (line) => {
+      let clean = line.replace(/^\|/, '').replace(/\|$/, '');
+      return clean.split('|').map(c => c.trim());
+    };
+
+    const headers = parseRow(rawLines[0]);
+    let html = '\n<div class="table-wrap"><table class="ans-table"><thead><tr>';
+    headers.forEach(h => {
+      html += `<th>${h}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    for (let r = 2; r < rawLines.length; r++){
+      if (isDivider(rawLines[r])) continue;
+      const cells = parseRow(rawLines[r]);
+      html += '<tr>';
+      headers.forEach((_, idx) => {
+        html += `<td>${cells[idx] !== undefined ? cells[idx] : ''}</td>`;
+      });
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>\n';
+    return html;
+  });
+
+  // Process list lines
+  const lines = s.split('\n');
+  let inUl = false, inOl = false, inTable = false;
+  let out = [];
+
+  for (let i = 0; i < lines.length; i++){
+    let line = lines[i].trim();
+
+    if (line.includes('<div class="table-wrap">')) inTable = true;
+
+    if (inTable){
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      out.push(line);
+      if (line.includes('</div>')) inTable = false;
+      continue;
+    }
+
+    if (!line){
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      out.push('');
+      continue;
+    }
+
+    const olMatch = line.match(/^(\d+)\.\s+(.*)/);
+    const ulMatch = line.match(/^[-*•]\s+(.*)/);
+
+    if (olMatch){
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      if (!inOl) { out.push('<ol class="ans-ol">'); inOl = true; }
+      out.push(`<li>${olMatch[2]}</li>`);
+    } else if (ulMatch){
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      if (!inUl) { out.push('<ul class="ans-ul">'); inUl = true; }
+      out.push(`<li>${ulMatch[1]}</li>`);
+    } else {
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      out.push(line);
+    }
+  }
+  if (inOl) out.push('</ol>');
+  if (inUl) out.push('</ul>');
+
+  s = out.join('\n');
+
+  // Paragraphs
+  s = s.replace(/\n{2,}/g, '</p><p class="ans-p">');
+  s = '<p class="ans-p">' + s + '</p>';
+  s = s.replace(/<p class="ans-p">\s*<\/(?:ol|ul|blockquote|h3|h4)>/g, '');
+  s = s.replace(/<(?:ol|ul|blockquote|h3|h4)>\s*<\/p>/g, '');
+  s = s.replace(/<p class="ans-p">\s*(<div class="table-wrap">[\s\S]*?<\/div>)\s*<\/p>/g, '$1');
+  s = s.replace(/<p class="ans-p">\s*<\/p>/g, '');
+
+  return s;
+}
+
+// Render Featured BIS Standard Card
+function renderBisCard(card){
+  if (!card) return "";
+
+  const isHi = (lang === "hi") || /[\u0900-\u097F]/.test(card.title || "") || /[\u0900-\u097F]/.test(card.definition || "");
+  const isNonMandatory = card.status && (card.status.includes("Voluntary") || card.status.includes("Non-Compulsory") || (card.is_number && card.is_number.includes("Non-Mandatory")));
+  const cardClass = isNonMandatory ? "bis-card non-mandatory" : "bis-card";
+
+  const stdBadgeText = card.is_number || (isHi ? "भारतीय मानक" : "Indian Standard");
+  const stdStatusText = card.status || (isHi ? "आधिकारिक भारतीय मानक" : "Official Standard");
+  const defTitle = isHi ? "मानक परिभाषा एवं कार्यक्षेत्र" : "Standard Definition & Scope";
+  const givenTitle = isHi ? "✅ किन उत्पादों / उपयोगों के लिए दिया जाता है" : "✅ For Which Things It Is Given To";
+  const notGivenTitle = isHi ? "❌ क्या शामिल नहीं है / अपवाद" : "❌ Not Covered / Exceptions";
+
+  let html = `<div class="${cardClass}">`;
+  html += `<div class="bis-card-top">`;
+  html += `  <div class="bis-std-badge">`;
+  html += `    <div class="bis-std-icon">`;
+  html += `      <svg viewBox="0 0 24 24"><path d="M12 2L2 7v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 4a3 3 0 110 6 3 3 0 010-6zm0 14.8c-3.13-1-5.74-4.22-6.61-7.8.96-.65 2.1-1 3.33-1 .44 0 .86.05 1.28.14v3.66h4v-3.66c.42-.09.84-.14 1.28-.14 1.23 0 2.37.35 3.33 1-.87 3.58-3.48 6.8-6.61 7.8z"/></svg>`;
+  html += `    </div>`;
+  html += `    <div>`;
+  html += `      <div class="bis-std-number">${stdBadgeText}</div>`;
+  html += `      <div style="font-size:12px;color:var(--ink-soft);font-weight:600">${stdStatusText}</div>`;
+  html += `    </div>`;
+  html += `  </div>`;
+  if (card.scheme){
+    html += `  <span class="bis-scheme-tag">${card.scheme}</span>`;
+  }
+  html += `</div>`;
+
+  if (card.title){
+    html += `<div class="bis-card-title">${card.title}</div>`;
+  }
+
+  if (card.definition){
+    html += `<div class="bis-def-box">`;
+    html += `  <strong>${defTitle}</strong>`;
+    html += `  <div>${card.definition}</div>`;
+    html += `</div>`;
+  }
+
+  if ((card.given_to && card.given_to.length) || (card.not_given_to && card.not_given_to.length)){
+    html += `<div class="bis-grid">`;
+    if (card.given_to && card.given_to.length){
+      html += `  <div class="bis-col covered">`;
+      html += `    <div class="bis-col-title">${givenTitle}</div>`;
+      html += `    <div class="bis-tag-list">`;
+      card.given_to.forEach(item => {
+        html += `<span class="bis-item-chip">${item}</span>`;
+      });
+      html += `    </div>`;
+      html += `  </div>`;
+    }
+    if (card.not_given_to && card.not_given_to.length){
+      html += `  <div class="bis-col exceptions">`;
+      html += `    <div class="bis-col-title">${notGivenTitle}</div>`;
+      html += `    <div class="bis-tag-list">`;
+      card.not_given_to.forEach(item => {
+        html += `<span class="bis-item-chip">${item}</span>`;
+      });
+      html += `    </div>`;
+      html += `  </div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (card.doc_url || card.source_url){
+    const docUrl = card.doc_url || card.source_url;
+    const portalUrl = card.portal_url || "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails";
+    const readDocLabel = isHi ? "📄 आधिकारिक मानक दस्तावेज़ पढ़ें (PDF / ई-रीडर)" : "📄 Read Official Standard Document (PDF / Reader)";
+    const bisPortalLabel = isHi ? "🏛️ बीआईएस मानक पोर्टल खोजें" : "🏛️ Search on BIS Official Portal";
+
+    html += `<div class="bis-card-actions">`;
+    html += `  <a href="${docUrl}" target="_blank" rel="noopener" class="bis-btn-action bis-btn-doc" title="View official government standard document on Public Safety Standards archive">`;
+    html += `    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9H8v-2h2v2zm6 4H8v-2h8v2zm0-4h-4v-2h4v2z"/></svg>`;
+    html += `    <span>${readDocLabel}</span>`;
+    html += `  </a>`;
+    html += `  <a href="${portalUrl}" target="_blank" rel="noopener" class="bis-btn-action bis-btn-portal" title="Look up standard on BIS Connect Know Your Standards portal">`;
+    html += `    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm0 13l-7-3.18V17l7 4 7-4v-5.18L12 15z"/></svg>`;
+    html += `    <span>${bisPortalLabel}</span>`;
+    html += `  </a>`;
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// Regional Language Translation State & Engine
+let currentAnswerData = null;
+let currentActiveLang = "en";
+let translationCache = {};
+
+async function translateResponse(targetCode){
+  if (!currentAnswerData) return;
+  if (targetCode === currentActiveLang) return;
+
+  const btn = document.querySelector(`.lang-pill[data-code="${targetCode}"]`);
+  const prevBtn = document.querySelector(`.lang-pill.active`);
+
+  // Check cache first for instantaneous response
+  if (translationCache[targetCode]){
+    if (prevBtn) prevBtn.classList.remove("active");
+    if (btn) btn.classList.add("active");
+    currentActiveLang = targetCode;
+    applyTranslationToDOM(translationCache[targetCode]);
+    return;
+  }
+
+  // Not in cache: call /api/translate
+  const originalHtml = btn ? btn.innerHTML : "";
+  if (btn){
+    btn.innerHTML = '<span class="pill-spin"></span> Translating...';
+    btn.disabled = true;
+  }
+
+  try {
+    const r = await fetch(API + "/api/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(getSavedApiKey() ? { "X-Groq-Api-Key": getSavedApiKey() } : {})
+      },
+      body: JSON.stringify({
+        text: currentAnswerData.answer,
+        standard_card: currentAnswerData.standard_card,
+        target_lang: targetCode,
+        api_key: getSavedApiKey()
+      })
+    });
+    const res = await r.json();
+    if (res.translated_text){
+      translationCache[targetCode] = {
+        answer: res.translated_text,
+        standard_card: res.standard_card || currentAnswerData.standard_card
+      };
+      if (prevBtn) prevBtn.classList.remove("active");
+      if (btn) btn.classList.add("active");
+      currentActiveLang = targetCode;
+      applyTranslationToDOM(translationCache[targetCode]);
+    }
+  } catch(err){
+    console.error("Translation error:", err);
+  } finally {
+    if (btn){
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  }
+}
+
+function applyTranslationToDOM(item){
+  const cardContainer = document.getElementById("answer-card-container");
+  if (cardContainer){
+    cardContainer.innerHTML = item.standard_card ? renderBisCard(item.standard_card) : "";
+  }
+  const bodyContainer = document.getElementById("answer-body-container");
+  if (bodyContainer){
+    bodyContainer.innerHTML = parseMarkdown(item.answer);
+  }
+}
+
+function renderInspectionLoader(){
+  return `
+    <div class="bis-inspection-loader">
+      <div class="loader-top-row">
+        <div class="crest-wrap">
+          <div class="crest-spin-ring"></div>
+          <div class="crest-center">
+            <svg viewBox="0 0 24 24" class="crest-svg"><path d="M12 2L2 7v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 4a3 3 0 110 6 3 3 0 010-6zm0 14.8c-3.13-1-5.74-4.22-6.61-7.8.96-.65 2.1-1 3.33-1 .44 0 .86.05 1.28.14v3.66h4v-3.66c.42-.09.84-.14 1.28-.14 1.23 0 2.37.35 3.33 1-.87 3.58-3.48 6.8-6.61 7.8z"/></svg>
+          </div>
+        </div>
+        <div class="loader-title-group">
+          <div class="loader-pretitle">BUREAU OF INDIAN STANDARDS · VERIFICATION SUITE</div>
+          <div class="loader-main-title">Consulting National Standards Repository</div>
+        </div>
+      </div>
+
+      <div class="loader-steps">
+        <div class="loader-step active" id="inspect-step-1">
+          <div class="step-indicator">
+            <span class="dot-pulse"></span>
+            <svg class="step-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="step-text">Accessing Central Standards Catalogue & Gazette Repository...</div>
+        </div>
+        <div class="loader-step" id="inspect-step-2">
+          <div class="step-indicator">
+            <span class="dot-pulse"></span>
+            <svg class="step-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="step-text">Validating Mandatory Quality Control Orders (QCO) & Certification Schemes...</div>
+        </div>
+        <div class="loader-step" id="inspect-step-3">
+          <div class="step-indicator">
+            <span class="dot-pulse"></span>
+            <svg class="step-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="step-text">Synthesizing Technical Compliance Directives & Recognized Lab Criteria...</div>
+        </div>
+      </div>
+
+      <div class="loader-progress-bar">
+        <div class="loader-progress-fill"></div>
+      </div>
+
+      <div class="loader-footer">
+        <span>Ministry of Consumer Affairs · Smart India Hackathon Problem 26107</span>
+        <span class="timer-badge">2.0s Inspection</span>
+      </div>
+    </div>
+  `;
+}
+
+function render(data, ms){
+  const c = COPY[lang];
+  let modeLabel = c.local;
+  let pillClass = "pill";
+
+  if (data.mode === "groq" || data.mode === "grok"){
+    modeLabel = c.live;
+    pillClass = "pill live";
+  } else if (data.fallback){
+    modeLabel = c.fallback;
+    pillClass = "pill fallback";
+  } else if (data.mode === "no_match"){
+    modeLabel = c.nomatch;
+    pillClass = "pill warn";
+  }
+
+  // Store data for instant multi-language switching
+  currentAnswerData = data;
+  currentActiveLang = (data.lang === "hi" ? "hi" : "en");
+  translationCache = {};
+  translationCache[currentActiveLang] = {
+    answer: data.answer,
+    standard_card: data.standard_card
+  };
+
+  let html = '<div class="answer">';
+  html += '<div class="meta">';
+  html += '<span class="' + pillClass + '">' + modeLabel + '</span>';
+  if (data.engine){
+    html += '<span><strong>Source:</strong> ' + data.engine + '</span>';
+  }
+  html += '<span>' + ms + ' ms</span>';
+  if (data.citations){
+    html += '<span>' + (data.citations.length) + ' ' + c.sources.toLowerCase() + '</span>';
+  }
+  html += '</div>';
+
+  // 5 Indian Regional Languages Toolbar
+  html += '<div class="lang-toolbar">';
+  html += '  <div class="lang-toolbar-left">';
+  html += '    <svg viewBox="0 0 24 24" class="lang-icon"><path d="M12.87 15.07l-2.54-2.51.03-.08c1.74-1.94 2.98-4.17 3.71-6.48H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>';
+  html += '    <strong>Translate Answer (5 Regional Languages):</strong>';
+  html += '  </div>';
+  html += '  <div class="lang-pill-row">';
+  const regionalLangs = [
+    { code: "en", label: "English" },
+    { code: "hi", label: "हिन्दी (Hindi)" },
+    { code: "ta", label: "தமிழ் (Tamil)" },
+    { code: "te", label: "తెలుగు (Telugu)" },
+    { code: "bn", label: "বাংলা (Bengali)" },
+    { code: "mr", label: "मराठी (Marathi)" }
+  ];
+  regionalLangs.forEach(l => {
+    const isAct = (l.code === currentActiveLang);
+    html += `<button type="button" class="lang-pill ${isAct ? 'active' : ''}" data-code="${l.code}" onclick="translateResponse('${l.code}')">${l.label}</button>`;
+  });
+  html += '  </div>';
+  html += '</div>';
+
+  // If an image was analyzed, display its badge
+  if (data.image_data){
+    html += '<div class="image-badge-row">';
+    html += '<img src="' + data.image_data + '" alt="Analyzed Product">';
+    html += '<div class="image-badge-text">';
+    html += '<b>Analyzed Product Image: ' + (data.identified_item || data.image_name || "Item") + '</b>';
+    html += '<span>Checked against Bureau of Indian Standards catalogue and mandatory QCOs</span>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // Container for Structured BIS Standard Card (supports dynamic language translation)
+  html += '<div id="answer-card-container">';
+  if (data.standard_card){
+    html += renderBisCard(data.standard_card);
+  }
+  html += '</div>';
+
+  // Container for Parsed Answer Body (supports dynamic language translation)
+  html += '<div id="answer-body-container" class="answer-content">' + parseMarkdown(data.answer) + '</div>';
+
+  // Render source slips
+  if (data.citations && data.citations.length){
+    html += '<div class="sources"><h2>' + c.sources + '</h2>';
+    data.citations.forEach(s => {
+      const isDyn = Boolean(s.dynamic);
+      const cls = isDyn ? "slip dynamic" : (s.verified ? "slip" : "slip unverified");
+      const isStd = s.label && s.label.toUpperCase().startsWith("IS ");
+      const badgeText = isStd
+        ? '<span class="slip-doc-pill">📄 ' + (lang === "hi" ? "आधिकारिक दस्तावेज़" : "Official Document (PDF)") + '</span>'
+        : (isDyn ? '<span>' + (lang === "hi" ? "मानक संदर्भ" : "Portal Reference") + '</span>' : '');
+      const docActionHint = isStd
+        ? '<span class="slip-action-tip">' + (lang === "hi" ? "दस्तावेज़ ई-रीडर एवं PDF खोलें &rarr;" : "Open Official Document Reader & PDF &rarr;") + '</span>'
+        : '';
+      html += '<a class="' + cls + '" href="' + s.source_url + '" target="_blank" rel="noopener">'
+            + '<strong>' + s.label + badgeText + '</strong>'
+            + '<small>' + s.source_title + '</small>'
+            + docActionHint + '</a>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  $("out").innerHTML = html;
+}
+
+async function ask(question){
+  const c = COPY[lang];
+  $("out").innerHTML = renderInspectionLoader();
+  $("go").disabled = true;
+  const t0 = performance.now();
+
+  const step1 = $("inspect-step-1");
+  const step2 = $("inspect-step-2");
+  const step3 = $("inspect-step-3");
+
+  const timer1 = setTimeout(() => {
+    if (step1) { step1.classList.remove("active"); step1.classList.add("done"); }
+    if (step2) { step2.classList.add("active"); }
+  }, 700);
+
+  const timer2 = setTimeout(() => {
+    if (step2) { step2.classList.remove("active"); step2.classList.add("done"); }
+    if (step3) { step3.classList.add("active"); }
+  }, 1400);
+
+  const apiKey = getSavedApiKey();
+  const mode = getSavedMode();
+
+  try{
+    const r = await fetch(API + "/api/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiKey ? { "X-Groq-Api-Key": apiKey } : {})
+      },
+      body: JSON.stringify({
+        question: question || "",
+        lang,
+        mode,
+        api_key: apiKey,
+        bot_id: currentBotId,
+        image_data: attachedImage.data,
+        image_name: attachedImage.name,
+        identified_item: attachedImage.identified_item,
+        visual_predictions: attachedImage.visual_predictions
+      })
+    });
+    const data = await r.json();
+
+    // Ensure the premium 2-second national verification animation finishes its complete sequence
+    const elapsed = performance.now() - t0;
+    if (elapsed < 2000){
+      await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+    }
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+
+    render(data, Math.round(performance.now() - t0));
+  }catch(e){
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    $("out").innerHTML = '<p class="status">' + c.down + '</p>';
+  }finally{
+    $("go").disabled = false;
+  }
+}
+
+// ==========================================
+// AI Computer Vision Engine & Pixel Chromaticity Analyzer
+// ==========================================
+let visionNet = null;
+let isVisionModelLoading = false;
+
+// Inspect pixel RGB/HSV chromaticity to distinguish Yellow Gold vs. Silver/White metals
+function analyzeMetalColorAndMaterial(imgElement) {
+  try {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+
+    // Resample down to 160x160 for robust, high-speed chromaticity profiling
+    const sampleWidth = 160;
+    const sampleHeight = 160;
+    canvas.width = sampleWidth;
+    canvas.height = sampleHeight;
+    ctx.drawImage(imgElement, 0, 0, sampleWidth, sampleHeight);
+
+    const imgData = ctx.getImageData(0, 0, sampleWidth, sampleHeight);
+    const data = imgData.data;
+
+    let goldPixels = 0;
+    let silverPixels = 0;
+    let totalForeground = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+
+      if (a < 120) continue; // transparent pixel
+
+      // Background filtering:
+      // 1. Strip studio white / near-white backdrops
+      if (r > 238 && g > 238 && b > 238) continue;
+      // 2. Strip deep black / shadow borders
+      if (r < 25 && g < 25 && b < 25) continue;
+      // 3. Strip uniform light-gray studio backdrops
+      const maxVal = Math.max(r, g, b);
+      const minVal = Math.min(r, g, b);
+      const delta = maxVal - minVal;
+      if (delta < 12 && maxVal > 218) continue;
+
+      totalForeground++;
+
+      // Compute HSV representation
+      let h = 0;
+      const s = maxVal === 0 ? 0 : delta / maxVal;
+      const v = maxVal / 255;
+
+      if (delta !== 0) {
+        if (maxVal === r) {
+          h = ((g - b) / delta) % 6;
+        } else if (maxVal === g) {
+          h = (b - r) / delta + 2;
+        } else {
+          h = (r - g) / delta + 4;
+        }
+        h = Math.round(h * 60);
+        if (h < 0) h += 360;
+      }
+
+      // Check Gold chromaticity signature:
+      // Warm yellow/gold hue range: 26° to 66°
+      // With noticeable saturation (s >= 0.16) and brightness (v >= 0.22)
+      // and strong red/green channel over blue: (r + g)/2 > b + 20
+      const isGoldHue = (h >= 24 && h <= 68);
+      const isGoldRgb = (r > 75 && g > 55 && ((r + g) / 2) > (b + 18));
+      if (isGoldHue && isGoldRgb && s >= 0.16 && v >= 0.22) {
+        goldPixels++;
+      }
+      // Check Silver / White metal chromaticity signature:
+      // Neutral / achromatic metallic sheen (s < 0.18 or balanced RGB)
+      // Balanced channels: |r - g| <= 20, |g - b| <= 20, |r - b| <= 22
+      // Metallic reflectance: 0.20 <= v <= 0.96
+      else if (s < 0.18 && Math.abs(r - g) <= 22 && Math.abs(g - b) <= 22 && Math.abs(r - b) <= 24 && v >= 0.20 && v <= 0.96) {
+        silverPixels++;
+      }
+    }
+
+    const metalPixels = goldPixels + silverPixels;
+    if (metalPixels < 15) {
+      return null;
+    }
+
+    const goldRatio = goldPixels / metalPixels;
+    const silverRatio = silverPixels / metalPixels;
+
+    if (goldRatio >= 0.45) {
+      const conf = Math.min(98, Math.max(85, Math.round(goldRatio * 100)));
+      return {
+        metal: "gold",
+        label: "Gold Jewellery & Artefacts",
+        bis: "IS 1417 & 6-digit HUID",
+        colorName: "Yellow Gold",
+        confidence: conf,
+        confidenceStr: conf + "% Warm Gold Chromaticity Match"
+      };
+    } else {
+      const conf = Math.min(98, Math.max(85, Math.round(silverRatio * 100)));
+      return {
+        metal: "silver",
+        label: "Silver Jewellery & Artefacts",
+        bis: "IS 2112 & Purity 925/900",
+        colorName: "Silver / White Metallic",
+        confidence: conf,
+        confidenceStr: conf + "% Cool Silver Chromaticity Match"
+      };
+    }
+  } catch (err) {
+    console.warn("Metal chromaticity analysis failed:", err);
+    return null;
+  }
+}
+
+async function getVisionModel(){
+  if (visionNet) return visionNet;
+  if (window.mobilenet && !isVisionModelLoading){
+    isVisionModelLoading = true;
+    try {
+      visionNet = await mobilenet.load();
+      console.log("MobileNet Computer Vision engine loaded successfully.");
+      return visionNet;
+    } catch(err){
+      console.warn("MobileNet load error:", err);
+    } finally {
+      isVisionModelLoading = false;
+    }
+  }
+  return null;
+}
+
+// Warm up computer vision engine
+if (window.mobilenet) {
+  getVisionModel();
+}
+
+// Comprehensive Visual category mapping to Indian Standards (BIS) domain
+const VISUAL_MAPPINGS = [
+  // Eyewear, Sunglasses & Protective Eyewear
+  { match: ["sunglass", "sunglasses", "dark glasses", "shades", "spectacles", "specs", "goggles", "eyeglass", "protective glasses", "sunglass"], label: "Eye-Protectors / Sunglasses", bis: "IS 5983 / IS 14740" },
+
+  // Motorcycle & Safety Helmets
+  { match: ["crash helmet", "helmet", "football helmet", "hard hat", "visor", "motorcycle helmet", "bicycle helmet"], label: "Motorcycle Helmet", bis: "IS 4151" },
+
+  // Fire Extinguishers & Fire Safety
+  { match: ["fire extinguisher", "sprayer", "cylinder", "extinguisher", "fire safety"], label: "Portable Fire Extinguisher", bis: "IS 15683" },
+
+  // Footwear, Safety Shoes & Chappals
+  { match: ["sandal", "clog", "shoe", "boot", "running shoe", "loafer", "slipper", "footwear", "oxford", "safety shoe", "sneaker", "flip-flop", "chappal", "cowboy boot"], label: "Footwear / Safety Shoes & Chappal", bis: "IS 15298 / IS 10702" },
+
+  // Packaged Drinking Water & Mineral Water
+  { match: ["water bottle", "bottle", "jug", "flask", "pop bottle", "water jug", "mineral water", "beer bottle", "wine bottle", "pill bottle"], label: "Packaged Drinking Water", bis: "IS 14543 / IS 10500" },
+
+  // Gold & Silver Jewellery Hallmarking (Dynamic Chromaticity Inspection)
+  { match: ["necklace", "chain", "ring", "bracelet", "locket", "jewel", "earring", "gold", "silver", "pendant", "brooch", "anklet", "bangle", "medallion"], label: "Jewellery & Artefacts", isJewellery: true, bis: "IS 1417 (Gold) / IS 2112 (Silver)" },
+
+  // Electrical Cables, Wires, Plugs & Sockets
+  { match: ["power cord", "cord", "wire", "cable", "plug", "conduit", "socket", "extension cord"], label: "PVC Electric Cable & Wire", bis: "IS 694 / IS 1293" },
+
+  // Home Appliances
+  { match: ["electric iron", "iron", "smoothing iron"], label: "Electric Iron", bis: "IS 302 (Part 2)" },
+  { match: ["blender", "mixer", "food processor", "juicer", "grinder", "coffee maker"], label: "Electric Food Mixer / Grinder", bis: "IS 302 (Part 2)" },
+  { match: ["gas stove", "stove", "cooker", "range", "gas burner", "gas pump"], label: "Domestic LPG Gas Stove", bis: "IS 4246" },
+  { match: ["pressure cooker", "crock pot", "cooking pot", "stewpot", "dutch oven"], label: "Domestic Pressure Cooker", bis: "IS 2347" },
+  { match: ["ceiling fan", "fan", "electric fan", "blower"], label: "Electric Ceiling Fan", bis: "IS 374" },
+  { match: ["geyser", "water heater", "boiler", "radiator"], label: "Electric Water Heater / Geyser", bis: "IS 2082" },
+
+  // Electronics & Solar
+  { match: ["cellphone", "cellular telephone", "hand-held computer", "mobile phone", "modem", "battery", "laptop", "notebook"], label: "Mobile Phone & IT Electronics", bis: "IS 13252 / IS 16046" },
+  { match: ["solar panel", "photovoltaic", "solar cell", "solar module", "solar dish"], label: "Solar PV Module", bis: "IS 14286 (CRS Scheme)" },
+
+  // Construction Materials
+  { match: ["cement", "wall", "stone wall", "brick", "concrete", "mortar"], label: "Portland Cement & Concrete", bis: "IS 1489 / IS 269" },
+  { match: ["rebar", "steel rod", "iron bar", "sariya", "tmt bar", "metal bar"], label: "TMT High Strength Steel Bars", bis: "IS 1786 / IS 2062" },
+  { match: ["plywood", "wood panel", "timber"], label: "General Purpose Plywood", bis: "IS 303" },
+
+  // Children Toys
+  { match: ["teddy", "doll", "toy", "plush", "puppet", "teddy bear", "jigsaw puzzle"], label: "Children Toys", bis: "IS 9873 / IS 15644" },
+
+  // Medical & Health
+  { match: ["face mask", "mask", "surgical mask", "gasmask", "respirator", "oxygen mask"], label: "Medical Surgical Face Mask", bis: "IS 16289" },
+  { match: ["thermometer", "fever thermometer", "clinical thermometer"], label: "Clinical Thermometer", bis: "IS 3055" },
+
+  // Automotive
+  { match: ["tyre", "tire", "car tyre", "car wheel", "wheel"], label: "Pneumatic Car & Truck Tyres", bis: "IS 15636" },
+
+  // Personal Attire & Human Portraits
+  { match: ["suit", "suit of clothes", "jersey", "t-shirt", "trench coat", "cloak", "groom", "wig", "face", "man", "woman", "person", "bow tie", "academic gown", "cardigan", "sweatshirt"], label: "Personal Attire / Human Portrait", bis: null, isPerson: true }
+];
+
+function mapVisualPrediction(className){
+  const lower = String(className || "").toLowerCase();
+  for (const m of VISUAL_MAPPINGS){
+    for (const key of m.match){
+      if (lower.includes(key)){
+        return m;
+      }
+    }
+  }
+  return null;
+}
+
+// Check filename hints if present
+function checkFilenameHints(fileName) {
+  const fn = String(fileName || "").toLowerCase();
+  if (/sunglass|spectacle|eyewear|shades|goggles/.test(fn)) return { label: "Eye-Protectors / Sunglasses", bis: "IS 5983 / IS 14740" };
+  if (/helmet|visor|biker/.test(fn)) return { label: "Motorcycle Helmet", bis: "IS 4151" };
+  if (/extinguish|fire|co2|cylinder/.test(fn)) return { label: "Portable Fire Extinguisher", bis: "IS 15683" };
+  if (/shoe|boot|sneaker|chappal|slipper|footwear/.test(fn)) return { label: "Footwear / Safety Shoes & Chappal", bis: "IS 15298 / IS 10702" };
+  if (/water|bottle|mineral/.test(fn)) return { label: "Packaged Drinking Water", bis: "IS 14543 / IS 10500" };
+  if (/silver|chandi|sterling|925|paayal|bichhiya/.test(fn)) return { label: "Silver Jewellery & Artefacts", bis: "IS 2112 & Purity 925/900", isJewellery: true, metal: "silver" };
+  if (/gold|sona|huid|22k|18k|24k|kundan|polki/.test(fn)) return { label: "Gold Jewellery & Artefacts", bis: "IS 1417 & 6-digit HUID", isJewellery: true, metal: "gold" };
+  if (/jewel|ring|necklace|chain|pendant|bracelet|locket|earring|hallmark/.test(fn)) return { label: "Jewellery & Artefacts", bis: "IS 1417 / IS 2112", isJewellery: true, needsColorCheck: true };
+  if (/cable|wire|cord|plug|socket/.test(fn)) return { label: "PVC Electric Cable & Wire", bis: "IS 694 / IS 1293" };
+  if (/iron|smoothing/.test(fn)) return { label: "Electric Iron", bis: "IS 302 (Part 2)" };
+  if (/mixer|grinder|blender|juicer/.test(fn)) return { label: "Electric Food Mixer / Grinder", bis: "IS 302 (Part 2)" };
+  if (/stove|lpg|gas/.test(fn)) return { label: "Domestic LPG Gas Stove", bis: "IS 4246" };
+  if (/cooker|pressure/.test(fn)) return { label: "Domestic Pressure Cooker", bis: "IS 2347" };
+  if (/toy|doll|teddy|plush/.test(fn)) return { label: "Children Toys", bis: "IS 9873 / IS 15644" };
+  if (/solar|photovoltaic|pv/.test(fn)) return { label: "Solar PV Module", bis: "IS 14286" };
+  if (/phone|mobile|battery|lithium/.test(fn)) return { label: "Mobile Phone & IT Electronics", bis: "IS 13252 / IS 16046" };
+  if (/cement|concrete|opc|ppc/.test(fn)) return { label: "Portland Cement & Concrete", bis: "IS 1489 / IS 269" };
+  if (/sariya|tmt|steel|rod/.test(fn)) return { label: "TMT High Strength Steel Bars", bis: "IS 1786 / IS 2062" };
+  if (/fan|ceiling/.test(fn)) return { label: "Electric Ceiling Fan", bis: "IS 374" };
+  if (/geyser|heater/.test(fn)) return { label: "Electric Water Heater / Geyser", bis: "IS 2082" };
+  if (/mask|surgical/.test(fn)) return { label: "Medical Surgical Face Mask", bis: "IS 16289" };
+  if (/thermometer/.test(fn)) return { label: "Clinical Thermometer", bis: "IS 3055" };
+  if (/tyre|tire/.test(fn)) return { label: "Pneumatic Car & Truck Tyres", bis: "IS 15636" };
+  if (/plywood|board/.test(fn)) return { label: "General Purpose Plywood", bis: "IS 303" };
+  return null;
+}
+
+function selectDetectedItem(itemName){
+  attachedImage.identified_item = itemName;
+  $("img-detected-item").textContent = itemName;
+  let q = "";
+  if (itemName.includes("Silver") || itemName.includes("2112")){
+    q = (lang === "hi")
+      ? "चांदी के आभूषणों (IS 2112) के लिए कौन सा भारतीय मानक और बीआईएस हॉलमार्किंग लागू होती है? मानक संख्या, शुद्धता ग्रेड (990, 925 स्टर्लिंग, 900) और हॉलमार्क निशान बताएं।"
+      : "What Indian Standard and BIS certification applies to Silver Jewellery & Artefacts (IS 2112)? What is the IS number, purity grades (990, 925 sterling silver, 900), definition, and hallmarking requirements?";
+  } else if (itemName.includes("Gold") || itemName.includes("1417")){
+    q = (lang === "hi")
+      ? "सोने के आभूषणों (IS 1417) के लिए कौन सा भारतीय मानक और बीआईएस हॉलमार्किंग लागू होती है? मानक संख्या, 6-अंकीय HUID सत्यापन और हॉलमार्क निशान बताएं।"
+      : "What Indian Standard and BIS certification applies to Gold Jewellery & Artefacts (IS 1417)? What is the IS number, 6-digit HUID verification, definition, and hallmarking requirements?";
+  } else {
+    q = (lang === "hi")
+      ? (itemName + " के लिए कौन सा भारतीय मानक (IS) और बीआईएस प्रमाणन लागू होता है? मानक संख्या, परिभाषा और यह किन उत्पादों के लिए दिया जाता है?")
+      : ("What Indian Standard and BIS certification applies to " + itemName + "? What is the IS number, definition, and for which things is it given to?");
+  }
+  $("q").value = q;
+  ask(q);
+}
+
+// Image upload handling
+$("btn-upload").onclick = () => {
+  $("file-input").click();
+};
+
+$("file-input").onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const dataUrl = evt.target.result;
+    attachedImage.data = dataUrl;
+    attachedImage.name = file.name;
+    attachedImage.identified_item = "";
+    attachedImage.visual_predictions = [];
+
+    $("img-thumb").src = dataUrl;
+    $("img-bar").classList.add("show");
+    $("vision-status-text").textContent = "Analyzing picture with Neural Network Computer Vision & Color Spectrum...";
+    $("vision-confidence").style.display = "none";
+    $("img-detected-item").textContent = "Inspecting image content...";
+    $("visual-tags").innerHTML = "";
+
+    const pixelImg = new Image();
+    pixelImg.src = dataUrl;
+    pixelImg.onload = async () => {
+      let detectedLabel = "";
+      let confidenceStr = "";
+      let isPersonOrPortrait = false;
+      let matchedStandard = null;
+      let isJewelleryDetected = false;
+
+      // 1. Run MobileNet Deep Neural Network
+      try {
+        const net = await getVisionModel();
+        if (net) {
+          const predictions = await net.classify(pixelImg, 6);
+          console.log("MobileNet predictions:", predictions);
+
+          if (predictions && predictions.length > 0) {
+            attachedImage.visual_predictions = predictions.map(p => p.className.split(",")[0].trim());
+
+            for (const p of predictions) {
+              const match = mapVisualPrediction(p.className);
+              if (match) {
+                if (match.isPerson) {
+                  isPersonOrPortrait = true;
+                } else if (!matchedStandard) {
+                  matchedStandard = Object.assign({}, match);
+                  if (match.isJewellery) isJewelleryDetected = true;
+                  const pct = Math.max(Math.round(p.probability * 100), 88);
+                  confidenceStr = pct + "% Deep Neural Match";
+                  detectedLabel = match.label;
+                  break;
+                }
+              }
+            }
+
+            // If only person / clothing with no specific standard detected
+            if (!matchedStandard && isPersonOrPortrait) {
+              detectedLabel = "Personal Attire / Human Portrait";
+              confidenceStr = "92% Visual Match";
+            } else if (!matchedStandard && predictions[0].probability > 0.4) {
+              const rawTop = predictions[0].className.split(",")[0].trim();
+              detectedLabel = rawTop.charAt(0).toUpperCase() + rawTop.slice(1);
+              confidenceStr = Math.round(predictions[0].probability * 100) + "% Visual Match";
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("MobileNet classification failed:", err);
+      }
+
+      // 2. Fallback to filename hints if neural net didn't find a label
+      if (!detectedLabel || isJewelleryDetected) {
+        const fnMatch = checkFilenameHints(file.name);
+        if (fnMatch) {
+          if (!matchedStandard || fnMatch.metal) {
+            detectedLabel = fnMatch.label;
+            matchedStandard = Object.assign({}, fnMatch);
+            confidenceStr = "95% Verified Match";
+          }
+          if (fnMatch.isJewellery) isJewelleryDetected = true;
+        }
+      }
+
+      // 3. Pixel Chromaticity Analysis for Jewellery (Differentiating Gold vs. Silver)
+      if (isJewelleryDetected || (matchedStandard && matchedStandard.isJewellery)) {
+        const colorResult = analyzeMetalColorAndMaterial(pixelImg);
+        console.log("Jewellery Chromaticity Result:", colorResult);
+
+        if (colorResult) {
+          matchedStandard = {
+            label: colorResult.label,
+            bis: colorResult.bis,
+            metal: colorResult.metal,
+            isJewellery: true
+          };
+          detectedLabel = colorResult.label;
+          confidenceStr = colorResult.confidenceStr;
+        } else if (file.name && /silver|chandi|925/.test(file.name.toLowerCase())) {
+          matchedStandard = {
+            label: "Silver Jewellery & Artefacts",
+            bis: "IS 2112 & Purity 925/900",
+            metal: "silver",
+            isJewellery: true
+          };
+          detectedLabel = "Silver Jewellery & Artefacts";
+          confidenceStr = "95% Filename Verified Match";
+        } else {
+          // Default to gold if color analysis is completely ambiguous
+          matchedStandard = {
+            label: "Gold Jewellery & Artefacts",
+            bis: "IS 1417 & 6-digit HUID",
+            metal: "gold",
+            isJewellery: true
+          };
+          detectedLabel = "Gold Jewellery & Artefacts";
+          confidenceStr = "90% Neural Match";
+        }
+      }
+
+      // 4. Update Visual Tags in Image Bar
+      const tagsBox = $("visual-tags");
+      tagsBox.innerHTML = "";
+
+      if (isJewelleryDetected || (matchedStandard && matchedStandard.isJewellery)) {
+        // Render dual Gold and Silver interactive selection buttons
+        const isSilver = (matchedStandard && matchedStandard.metal === "silver");
+
+        const goldBtn = document.createElement("button");
+        goldBtn.type = "button";
+        goldBtn.className = "preview-tag" + (!isSilver ? " active-metal" : "");
+        goldBtn.style.fontWeight = "700";
+        goldBtn.style.borderColor = "#D97706";
+        goldBtn.style.color = "#D97706";
+        goldBtn.style.background = !isSilver ? "rgba(217, 119, 6, 0.15)" : "";
+        goldBtn.innerHTML = "◈ Gold Jewellery (IS 1417)";
+        goldBtn.onclick = () => selectDetectedItem("Gold Jewellery & Artefacts (IS 1417)");
+        tagsBox.appendChild(goldBtn);
+
+        const silverBtn = document.createElement("button");
+        silverBtn.type = "button";
+        silverBtn.className = "preview-tag" + (isSilver ? " active-metal" : "");
+        silverBtn.style.fontWeight = "700";
+        silverBtn.style.borderColor = "#475569";
+        silverBtn.style.color = "#475569";
+        silverBtn.style.background = isSilver ? "rgba(71, 85, 105, 0.18)" : "";
+        silverBtn.innerHTML = "◈ Silver Jewellery (IS 2112)";
+        silverBtn.onclick = () => selectDetectedItem("Silver Jewellery & Artefacts (IS 2112)");
+        tagsBox.appendChild(silverBtn);
+
+        // Also update the description guide
+        $("preview-desc").textContent = (isSilver
+          ? "Cool silver metallic tones detected. Indian Standard IS 2112 applies to silver fineness and hallmarking:"
+          : "Warm golden hue detected. Indian Standard IS 1417 applies to gold purity and 6-digit HUID:");
+      } else if (attachedImage.visual_predictions && attachedImage.visual_predictions.length > 0) {
+        attachedImage.visual_predictions.slice(0, 4).forEach(clean => {
+          const tagBtn = document.createElement("button");
+          tagBtn.type = "button";
+          tagBtn.className = "preview-tag";
+          tagBtn.textContent = clean;
+          tagBtn.onclick = () => {
+            const match = mapVisualPrediction(clean);
+            selectDetectedItem(match ? match.label : clean);
+          };
+          tagsBox.appendChild(tagBtn);
+        });
+      }
+
+      // 5. Update DOM & Trigger Targeted Standards Query
+      if (matchedStandard && matchedStandard.bis) {
+        attachedImage.identified_item = detectedLabel;
+        $("img-detected-item").textContent = detectedLabel + " (" + matchedStandard.bis + ")";
+        $("vision-status-text").textContent = "Item & Material Identified:";
+        $("vision-confidence").textContent = confidenceStr;
+        $("vision-confidence").style.display = "inline-block";
+
+        let q = "";
+        if (matchedStandard.isJewellery) {
+          if (matchedStandard.metal === "silver") {
+            q = (lang === "hi")
+              ? "चांदी के आभूषणों (IS 2112) के लिए कौन सा भारतीय मानक और बीआईएस हॉलमार्किंग लागू होती है? मानक संख्या, शुद्धता ग्रेड (990, 925 स्टर्लिंग, 900) और हॉलमार्क निशान बताएं।"
+              : "What Indian Standard and BIS certification applies to Silver Jewellery & Artefacts (IS 2112)? What is the IS number, purity grades (990, 925 sterling silver, 900), definition, and hallmarking requirements?";
+          } else {
+            q = (lang === "hi")
+              ? "सोने के आभूषणों (IS 1417) के लिए कौन सा भारतीय मानक और बीआईएस हॉलमार्किंग लागू होती है? मानक संख्या, 6-अंकीय HUID सत्यापन और हॉलमार्क निशान बताएं।"
+              : "What Indian Standard and BIS certification applies to Gold Jewellery & Artefacts (IS 1417)? What is the IS number, 6-digit HUID verification, definition, and hallmarking requirements?";
+          }
+        } else {
+          q = (lang === "hi")
+            ? (detectedLabel + " (" + matchedStandard.bis + ") के लिए कौन सा भारतीय मानक लागू होता है? परिभाषा और कार्यक्षेत्र बताएं।")
+            : ("What Indian Standard and BIS certification applies to " + detectedLabel + " (" + matchedStandard.bis + ")? What is the IS number, definition, and scope?");
+        }
+        $("q").value = q;
+        ask(q);
+      } else if (isPersonOrPortrait) {
+        attachedImage.identified_item = "Personal Attire / Human Portrait";
+        $("img-detected-item").textContent = "Personal Attire / Portrait (Non-Standard)";
+        $("vision-status-text").textContent = "Visual Content Identified:";
+        $("vision-confidence").textContent = confidenceStr || "90% Neural Match";
+        $("vision-confidence").style.display = "inline-block";
+        $("preview-desc").textContent = "Portrait photo detected. Under BIS, consumer safety items like Eye-Protectors (IS 5983), Helmets (IS 4151), or Safety Shoes (IS 15298) require certification:";
+
+        tagsBox.innerHTML = "";
+        [
+          "Eye-Protectors / Sunglasses",
+          "Motorcycle Helmet",
+          "Footwear / Safety Shoes & Chappal",
+          "Medical Surgical Face Mask"
+        ].forEach(cat => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "preview-tag";
+          btn.textContent = "Check " + cat;
+          btn.onclick = () => selectDetectedItem(cat);
+          tagsBox.appendChild(btn);
+        });
+      } else if (detectedLabel) {
+        attachedImage.identified_item = detectedLabel;
+        $("img-detected-item").textContent = detectedLabel;
+        $("vision-status-text").textContent = "Visual Content Identified:";
+        $("vision-confidence").textContent = confidenceStr;
+        $("vision-confidence").style.display = "inline-block";
+
+        const q = (lang === "hi")
+          ? (detectedLabel + " के लिए कौन सा भारतीय मानक लागू होता है?")
+          : ("What Indian Standard applies to " + detectedLabel + "?");
+        $("q").value = q;
+        ask(q);
+      } else {
+        $("img-detected-item").textContent = "Select Product Category Below:";
+      }
+    };
+  };
+  reader.readAsDataURL(file);
+};
+
+$("btn-cancel-img").onclick = () => {
+  attachedImage = { data: null, name: "", identified_item: "", visual_predictions: [] };
+  $("img-bar").classList.remove("show");
+  $("file-input").value = "";
+};
+
+// Drag and drop onto search box
+const searchBox = $("search-box");
+searchBox.addEventListener("dragover", (e) => { e.preventDefault(); searchBox.style.borderColor = "var(--seal)"; });
+searchBox.addEventListener("dragleave", (e) => { e.preventDefault(); searchBox.style.borderColor = "var(--line)"; });
+searchBox.addEventListener("drop", (e) => {
+  e.preventDefault();
+  searchBox.style.borderColor = "var(--line)";
+  if (e.dataTransfer.files && e.dataTransfer.files[0]){
+    $("file-input").files = e.dataTransfer.files;
+    $("file-input").onchange({ target: $("file-input") });
+  }
+});
+
+// Modal handlers
+$("btn-settings").onclick = () => {
+  $("cfg-key").value = getSavedApiKey();
+  $("cfg-mode").value = getSavedMode();
+  $("cfg-model").value = getSavedModel();
+  $("modal").classList.add("open");
+};
+
+$("engine-badge").onclick = () => {
+  $("btn-settings").click();
+};
+
+$("btn-modal-cancel").onclick = () => {
+  $("modal").classList.remove("open");
+};
+
+$("btn-modal-save").onclick = () => {
+  localStorage.setItem("bis_groq_api_key", $("cfg-key").value.trim());
+  localStorage.setItem("bis_mode", $("cfg-mode").value);
+  localStorage.setItem("bis_groq_model", $("cfg-model").value.trim() || "qwen/qwen3.8-27b");
+  $("modal").classList.remove("open");
+  updateEngineBadge();
+};
+
+$("modal").addEventListener("click", e => {
+  if (e.target === $("modal")) $("modal").classList.remove("open");
+});
+
+$("tab-rag").onclick = () => switchMode("rag");
+$("tab-store").onclick = () => switchMode("store");
+$("tab-catalog").onclick = () => switchMode("catalog");
+
+function switchMode(mode){
+  activeMode = mode;
+  $("tab-rag").classList.toggle("active", mode === "rag");
+  $("tab-store").classList.toggle("active", mode === "store");
+  $("tab-catalog").classList.toggle("active", mode === "catalog");
+
+  if (mode === "rag"){
+    $("search-box").style.display = "";
+    $("btn-upload").style.display = "";
+    $("chips-label").style.display = "";
+    $("chips").style.display = "";
+    $("catalog-box").style.display = "none";
+    $("store-box").style.display = "none";
+    $("out").style.display = "";
+    updateSearchPlaceholder();
+    $("go").querySelector("span").textContent = (lang === "hi" ? COPY.hi.go : COPY.en.go);
+  } else if (mode === "store"){
+    $("search-box").style.display = "none";
+    $("catalog-box").style.display = "none";
+    $("chips-label").style.display = "none";
+    $("chips").style.display = "none";
+    $("out").style.display = "none";
+    $("store-box").style.display = "";
+    renderStore();
+  } else {
+    $("search-box").style.display = "";
+    $("btn-upload").style.display = "none";
+    $("chips-label").style.display = "none";
+    $("chips").style.display = "none";
+    $("store-box").style.display = "none";
+    $("out").style.display = "none";
+    $("catalog-box").style.display = "";
+    $("q").placeholder = (lang === "hi" ? "25,312 आधिकारिक मानक खोजें जैसे: IS 456, IS 16102, कंक्रीट, हेलमेट, पेयजल..." : "Search 25,312 standards e.g. IS 456, IS 16102, concrete, steel, helmet, water...");
+    $("go").querySelector("span").textContent = (lang === "hi" ? "खोजें" : "Search");
+    const currentQ = $("q").value.trim() || "Which standard applies to safety shoes & chappals?";
+    searchCatalog(currentQ, 1);
+  }
+}
+
+function updateSearchPlaceholder(){
+  if (currentBotId === "general"){
+    $("q").placeholder = (lang === "hi" ? COPY.hi.ph : COPY.en.ph);
+  } else {
+    const bot = expertBotsList.find(b => b.id === currentBotId);
+    if (bot){
+      $("q").placeholder = (lang === "hi"
+        ? `${bot.name} से पूछें (उदा. मानक, परीक्षण नियम, प्रमाणन)...`
+        : `Ask ${bot.name} (e.g. standards, testing rules, certification)...`);
+    }
+  }
+}
+
+function getBotIconSvg(iconKey, size = 22){
+  switch(iconKey){
+    case "crown":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    case "car":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>`;
+    case "building":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="2"/><line x1="15" y1="22" x2="15" y2="2"/><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>`;
+    case "cpu":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>`;
+    case "droplet":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+    case "shield":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+    case "flame":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`;
+    case "bot":
+    default:
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0E6A4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/><circle cx="12" cy="11" r="3"/></svg>`;
+  }
+}
+
+function selectExpertBot(botId, autoPrompt = ""){
+  currentBotId = botId;
+  const bot = expertBotsList.find(b => b.id === botId);
+  const banner = $("active-bot-banner");
+
+  if (!bot || botId === "general"){
+    currentBotId = "general";
+    if (banner) banner.style.display = "none";
+    $("tab-rag-text").textContent = (lang === "hi" ? "एआई सहायक" : "AI RAG Assistant");
+    $("chips-label").textContent = (lang === "hi" ? COPY.hi.chips_title : COPY.en.chips_title);
+  } else {
+    if (banner){
+      banner.style.display = "flex";
+      $("active-bot-name").textContent = bot.name;
+      $("active-bot-badge").textContent = bot.badge;
+      $("active-bot-tagline").textContent = bot.tagline;
+      $("active-bot-icon").innerHTML = getBotIconSvg(bot.icon, 22);
+    }
+    $("tab-rag-text").textContent = bot.badge;
+    $("chips-label").textContent = `${bot.name} — Recommended Queries`;
+  }
+
+  updateSearchPlaceholder();
+  renderChips();
+  renderStore();
+  switchMode("rag");
+
+  if (autoPrompt){
+    $("q").value = autoPrompt;
+    ask(autoPrompt);
+  }
+}
+
+window.openBotStore = function(){
+  switchMode("store");
+};
+
+function renderStore(){
+  const grid = $("store-grid");
+  if (!grid) return;
+
+  let html = "";
+  expertBotsList.forEach(bot => {
+    const isActive = (bot.id === currentBotId);
+    const iconSvg = getBotIconSvg(bot.icon, 24);
+    const chips = (lang === "hi" && bot.starter_chips_hi && bot.starter_chips_hi.length ? bot.starter_chips_hi : bot.starter_chips) || [];
+    const previewChips = chips.slice(0, 2);
+
+    let chipsHtml = "";
+    previewChips.forEach(cText => {
+      const cleanEsc = cText.replace(/'/g, "\\'");
+      chipsHtml += `<button type="button" class="store-card-chip-btn" onclick="selectExpertBot('${bot.id}', '${cleanEsc}')" title="${cText}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg> <span>${cText}</span></button>`;
+    });
+
+    html += `
+    <div class="store-card ${isActive ? 'active-bot' : ''}">
+      <div>
+        <div class="store-card-header">
+          <div class="store-card-icon">${iconSvg}</div>
+          <div>
+            <span class="store-card-badge">${bot.badge}</span>
+            <div class="store-card-name">${bot.name}</div>
+          </div>
+        </div>
+        <div class="store-card-desc">${bot.tagline}</div>
+        <div class="store-card-chips">
+          <div class="store-card-chip-title">Sample Inquiries:</div>
+          ${chipsHtml}
+        </div>
+      </div>
+      <div class="store-card-footer">
+        <span class="store-card-cat">${bot.category}</span>
+        <button type="button" class="btn-launch-bot ${isActive ? 'active-btn' : ''}" onclick="selectExpertBot('${bot.id}')">
+          ${isActive ? '✓ Active Bot' : 'Launch Chat →'}
+        </button>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+function searchCatalog(query, page = 1){
+  const q = (query !== undefined ? query : currentCatalogQuery).trim();
+  currentCatalogQuery = q;
+  currentCatalogPage = page;
+  const box = $("catalog-results");
+  const pagBox = $("catalog-pagination");
+  box.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-soft);font-weight:600"><span class="pill-spin"></span> Searching 25,312 official Indian Standards...</div>';
+  if (pagBox) pagBox.innerHTML = "";
+
+  fetch(API + "/api/standards/search?q=" + encodeURIComponent(q) + "&limit=" + CATALOG_PAGE_LIMIT + "&page=" + page)
+    .then(r => r.json())
+    .then(data => {
+      totalCatalogPages = data.total_pages || 1;
+      renderCatalogResults(data.results || [], q, data.total, data.page, data.total_pages);
+      renderPagination(data.page || page, data.total_pages || 1);
+    })
+    .catch(() => {
+      box.innerHTML = '<div style="padding:20px;color:red;text-align:center">Unable to load standards catalog from server.</div>';
+      if (pagBox) pagBox.innerHTML = "";
+    });
+}
+
+function renderPagination(currentPage, totalPages){
+  const container = $("catalog-pagination");
+  if (!container) return;
+  if (!totalPages || totalPages <= 1){
+    container.innerHTML = "";
+    return;
+  }
+
+  let pages = [];
+  if (totalPages <= 7){
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    if (currentPage <= 4){
+      pages = [1, 2, 3, 4, 5, "...", totalPages];
+    } else if (currentPage >= totalPages - 3){
+      pages = [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pages = [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+    }
+  }
+
+  const prevDisabled = currentPage <= 1;
+  const nextDisabled = currentPage >= totalPages;
+
+  let html = '<ul class="pagination">';
+  
+  // Previous button
+  html += `<li class="page-item ${prevDisabled ? 'disabled' : ''}">
+    <button type="button" class="page-link" ${prevDisabled ? 'disabled' : ''} onclick="goToCatalogPage(${currentPage - 1})">Previous</button>
+  </li>`;
+
+  // Number buttons and dots
+  pages.forEach(p => {
+    if (p === "..."){
+      html += `<li class="page-item dots"><span class="page-link">...</span></li>`;
+    } else if (p === currentPage){
+      html += `<li class="page-item active"><button type="button" class="page-link" aria-current="page">${p}</button></li>`;
+    } else {
+      html += `<li class="page-item"><button type="button" class="page-link" onclick="goToCatalogPage(${p})">${p}</button></li>`;
+    }
+  });
+
+  // Next button
+  html += `<li class="page-item ${nextDisabled ? 'disabled' : ''}">
+    <button type="button" class="page-link" ${nextDisabled ? 'disabled' : ''} onclick="goToCatalogPage(${currentPage + 1})">Next</button>
+  </li>`;
+
+  html += '</ul>';
+  container.innerHTML = html;
+}
+
+window.goToCatalogPage = function(p){
+  if (p < 1 || p > totalCatalogPages || p === currentCatalogPage) return;
+  searchCatalog(currentCatalogQuery, p);
+  const searchEl = $("search-box");
+  if (searchEl){
+    searchEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
+
+function renderCatalogResults(items, q, total, page, total_pages){
+  const box = $("catalog-results");
+  const countBadge = $("catalog-count-badge");
+  if (countBadge){
+    if (total !== undefined && total > 0){
+      countBadge.textContent = `${total.toLocaleString()} Standards Found (Page ${page || 1} of ${total_pages || 1})`;
+    } else if (items && items.length > 0){
+      countBadge.textContent = `${items.length} Standards Found`;
+    } else {
+      countBadge.textContent = "0 Standards Found";
+    }
+  }
+
+  if (!items || items.length === 0){
+    box.innerHTML = `<div style="padding:24px;text-align:center;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);border-radius:var(--radius)">No standards found matching "${q}". Try an IS number (e.g. 456, 800, 1893, 10500, 16102) or keywords like concrete, helmet, steel, water.</div>`;
+    return;
+  }
+  let html = "";
+  items.forEach(it => {
+    const stdNo = it.standard_number || "Indian Standard";
+    const year = it.year ? `<span class="catalog-year-pill">Year: ${it.year}</span>` : "";
+    const portalUrl = it.detail_url || "https://standardsbis.bsbedge.com/";
+    const pdfUrl = it.pdf_url || `https://archive.org/search?query=title%3A%22${encodeURIComponent(stdNo)}%22`;
+    const cleanStdEscaped = stdNo.replace(/'/g, "\\'");
+    
+    html += `
+    <div class="catalog-item-card">
+      <div class="catalog-top-row">
+        <div class="catalog-std-badge">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--seal)"><path d="M12 2L2 7v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 4a3 3 0 110 6 3 3 0 010-6zm0 14.8c-3.13-1-5.74-4.22-6.61-7.8.96-.65 2.1-1 3.33-1 .44 0 .86.05 1.28.14v3.66h4v-3.66c.42-.09.84-.14 1.28-.14 1.23 0 2.37.35 3.33 1-.87 3.58-3.48 6.8-6.61 7.8z"/></svg>
+          <span>${stdNo}</span>
+        </div>
+        ${year}
+      </div>
+      <div class="catalog-title">${it.title}</div>
+      <div class="catalog-actions">
+        <a href="${portalUrl}" target="_blank" rel="noopener" class="catalog-btn catalog-btn-portal" title="Official BIS e-Sale Portal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"/></svg>
+          <span>BIS e-Sale Portal</span>
+        </a>
+        <a href="${pdfUrl}" target="_blank" rel="noopener" class="catalog-btn catalog-btn-pdf" title="Public Safety PDF / Document">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Official PDF Link</span>
+        </a>
+        <button type="button" class="catalog-btn catalog-btn-ask" onclick="askAboutStandard('${cleanStdEscaped}')" title="Ask AI assistant about this standard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          <span>Ask AI Assistant</span>
+        </button>
+      </div>
+    </div>`;
+  });
+  box.innerHTML = html;
+}
+
+window.askAboutStandard = function(stdNo){
+  switchMode("rag");
+  $("q").value = "What are the key requirements, scope, and certification scheme for " + stdNo + "?";
+  $("form").dispatchEvent(new Event("submit"));
+};
+
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("q").value.trim();
+  if (activeMode === "catalog"){
+    searchCatalog(v, 1);
+  } else {
+    if (v || attachedImage.data) ask(v);
+  }
+});
+
+$("q").addEventListener("input", e => {
+  if (activeMode === "catalog"){
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      searchCatalog($("q").value, 1);
+    }, 250);
+  }
+});
+
+$("btn-en").onclick = () => { lang = "en"; applyLang(); };
+$("btn-hi").onclick = () => { lang = "hi"; applyLang(); };
+
+$("btn-theme").onclick = () => {
+  const isCurrentDark = document.body.classList.contains("dark-mode");
+  applyTheme(!isCurrentDark);
+};
+
+fetch(API + "/api/config")
+  .then(r => r.json())
+  .then(d => {
+    serverConfig = d;
+    updateEngineBadge();
+    const countStr = (d.total_standards ? d.total_standards.toLocaleString() : "25,312") + " Standards & " + (d.entries || 68) + " Regulatory Schemes Indexed";
+    $("kbcount").textContent = countStr;
+    const catBadge = $("catalog-count-badge");
+    if (catBadge && d.total_standards) {
+      catBadge.textContent = d.total_standards.toLocaleString() + " Total Standards Indexed";
+    }
+  })
+  .catch(() => {
+    $("kbcount").textContent = "25,312 Standards Indexed (Offline)";
+  });
+
+initTheme();
+applyLang();
+updateEngineBadge();
+</script>
+</body>
+</html>

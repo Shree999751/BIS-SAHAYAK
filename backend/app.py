@@ -219,12 +219,52 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
         self.end_headers()
 
-    def do_GET(self):
+    def _resolve_path(self):
         parsed = urlparse(self.path)
-        path = parsed.path
         query_params = parse_qs(parsed.query)
+        path = parsed.path
+
+        # 1. Check if Vercel passed __route query param
+        if "__route" in query_params:
+            route = query_params["__route"][0].strip("/")
+            path = f"/api/{route}" if route else "/api"
+        # 2. Check headers set by reverse proxies / Vercel
+        elif self.headers.get("x-matched-path"):
+            path = urlparse(self.headers["x-matched-path"]).path
+        elif self.headers.get("x-forwarded-uri"):
+            path = urlparse(self.headers["x-forwarded-uri"]).path
+        elif self.headers.get("x-vercel-matched-path"):
+            path = urlparse(self.headers["x-vercel-matched-path"]).path
+
+        # Normalize direct script calls
+        if path in ("/api/index.py", "/api/index"):
+            path = "/api"
+
+        if len(path) > 1 and path.endswith("/"):
+            path = path[:-1]
+
+        return path, query_params
+
+    def do_GET(self):
+        path, query_params = self._resolve_path()
         header_key = self.headers.get("X-Groq-Api-Key") or self.headers.get("X-Grok-Api-Key")
 
+        if path in ("/api", "/api/index.py"):
+            all_keys = get_all_groq_keys(header_key)
+            return self._send({
+                "status": "ok",
+                "service": "BIS Sahayak API",
+                "groq_active": len(all_keys) > 0,
+                "model": get_groq_model(),
+                "endpoints": [
+                    "/api/health",
+                    "/api/config",
+                    "/api/topics",
+                    "/api/bots",
+                    "/api/standards/search",
+                    "/api/ask"
+                ]
+            })
         if path == "/api/standards/search":
             q = query_params.get("q", [""])[0]
             limit = int(query_params.get("limit", [10])[0])
@@ -259,13 +299,19 @@ class Handler(BaseHTTPRequestHandler):
             obj, code = handle_topics()
             return self._send(obj, code)
         if path in ("/", "/index.html"):
-            return self._send_file(os.path.join(FRONTEND, "index.html"), "text/html; charset=utf-8")
-        self._send({"error": "not found"}, 404)
+            for candidate in (
+                os.path.join(ROOT, "public", "index.html"),
+                os.path.join(FRONTEND, "index.html"),
+                os.path.join(ROOT, "index.html"),
+            ):
+                if os.path.exists(candidate):
+                    return self._send_file(candidate, "text/html; charset=utf-8")
+        self._send({"error": "not found", "path": path}, 404)
 
     def do_POST(self):
-        req_path = urlparse(self.path).path
+        req_path, _ = self._resolve_path()
         if req_path not in ("/api/ask", "/api/translate", "/api/standards/search"):
-            return self._send({"error": "not found"}, 404)
+            return self._send({"error": "not found", "path": req_path}, 404)
         length = int(self.headers.get("Content-Length") or 0)
         try:
             raw_body = self.rfile.read(length).decode("utf-8")
